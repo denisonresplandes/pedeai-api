@@ -31,3 +31,19 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Logs locais e arquivos temporários ###
+*.log
+logs/
+.metadata/
+tmp/
+temp/
+
+### Sistema Operacional (Mac e Windows) ###
+.DS_Store
+Thumbs.db
+desktop.ini
+
+### Arquivos de propriedades sensíveis (Opcional, mas boa prática) ###
+# Se no futuro você criar um arquivo para senhas de produção locais, descomente a linha abaixo:
+# application-prod.properties

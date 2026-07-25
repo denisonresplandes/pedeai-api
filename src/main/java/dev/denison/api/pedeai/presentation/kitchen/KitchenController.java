@@ -5,10 +5,12 @@ import dev.denison.api.pedeai.application.kitchen.KitchenQueryHandler;
 import dev.denison.api.pedeai.application.kitchen.dto.DeleteKitchenCommand;
 import dev.denison.api.pedeai.application.kitchen.dto.KitchenResponse;
 import dev.denison.api.pedeai.presentation.kitchen.dto.CreateKitchenRequest;
+import dev.denison.api.pedeai.presentation.kitchen.dto.UpdateKitchenRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -29,6 +31,7 @@ public class KitchenController {
         this.queryHandler = queryHandler;
         this.commandHandler = commandHandler;
     }
+    // TODO mover mensagens de validação para arquivo.
 
     @GetMapping
     public ResponseEntity<?> find(@RequestParam(value = "name", required = false) String name) {
@@ -46,6 +49,20 @@ public class KitchenController {
         return queryHandler.findById(id);
     }
 
+    /**
+     * Deixa a transação aberta (até o fim do método_) para que o Hibernate
+     * mantenha o cache de primeiro nível ativo e execute o UPDATE sem SELECTs extras.
+     */
+    @Transactional
+    @PutMapping("/{id}")
+    public KitchenResponse update(@PathVariable
+                                  @NotNull(message = "The kitchen id cannot be null")
+                                  @Positive(message = "The kitchen id must be a positive number")
+                                  Long id,
+                                  @RequestBody @Valid UpdateKitchenRequest request) {
+        return commandHandler.update(request.toCommand(id));
+    }
+
     @PostMapping
     public ResponseEntity<KitchenResponse> create(@RequestBody @Valid CreateKitchenRequest request,
                                                   UriComponentsBuilder uriBuilder) {
@@ -55,8 +72,6 @@ public class KitchenController {
                 .toUri();
         return ResponseEntity.created(uri).body(response);
     }
-
-    // TODO mover mensagens de validação para arquivo.
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable

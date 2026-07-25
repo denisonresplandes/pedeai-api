@@ -3,6 +3,7 @@ package dev.denison.api.pedeai.application.kitchen;
 import dev.denison.api.pedeai.application.kitchen.dto.CreateKitchenCommand;
 import dev.denison.api.pedeai.application.kitchen.dto.DeleteKitchenCommand;
 import dev.denison.api.pedeai.application.kitchen.dto.KitchenResponse;
+import dev.denison.api.pedeai.application.kitchen.dto.UpdateKitchenCommand;
 import dev.denison.api.pedeai.application.kitchen.exceptions.KitchenNameAlreadyExistsException;
 import dev.denison.api.pedeai.application.kitchen.exceptions.KitchenNotFoundException;
 import dev.denison.api.pedeai.application.shared.ValidationException;
@@ -26,6 +27,27 @@ public class KitchenCommandHandler {
         Kitchen kitchenToSave = Kitchen.create(name);
         Kitchen kitchenSaved = repository.save(kitchenToSave);
         return KitchenResponseMapper.toResponse(kitchenSaved);
+    }
+
+    public KitchenResponse update(UpdateKitchenCommand command) {
+        validate(command, "The update kitchen command cannot be null.");
+        KitchenId id = new KitchenId(command.id());
+        KitchenName newName = new KitchenName(command.name());
+
+        Kitchen kitchen = repository.findById(id).orElseThrow(() ->
+                new KitchenNotFoundException(command.id())
+        );
+
+        if (!kitchen.getName().equals(newName)) {
+            ensureNameIsUnique(newName);
+        }
+        /*
+        * Se o nome enviado for igual ao atual,
+        * o Hibernate não executa o UPDATE no banco.
+        * */
+        kitchen.changeName(newName);
+        Kitchen kitchenUpdated = repository.save(kitchen);
+        return KitchenResponseMapper.toResponse(kitchenUpdated);
     }
 
     public void delete(DeleteKitchenCommand command) {

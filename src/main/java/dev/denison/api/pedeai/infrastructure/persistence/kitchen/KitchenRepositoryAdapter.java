@@ -6,6 +6,8 @@ import dev.denison.api.pedeai.domain.kitchen.vo.KitchenId;
 import dev.denison.api.pedeai.domain.kitchen.vo.KitchenName;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public class KitchenRepositoryAdapter implements KitchenRepository {
 
@@ -20,6 +22,12 @@ public class KitchenRepositoryAdapter implements KitchenRepository {
         KitchenEntity entityToSave = KitchenMapper.toEntity(kitchen);
         KitchenEntity savedEntity = repository.save(entityToSave);
         return KitchenMapper.toDomain(savedEntity);
+    }
+
+    @Override
+    public Optional<Kitchen> findById(KitchenId id) {
+        return repository.findById(id.value())
+                .map(KitchenMapper::toDomain);
     }
 
     @Override

@@ -8,7 +8,7 @@ import dev.denison.api.pedeai.domain.shared.DomainException;
 public class Kitchen extends AggregateRoot {
 
     private final KitchenId id;
-    private final KitchenName name;
+    private KitchenName name;
 
     private Kitchen(KitchenId id, KitchenName name) {
         DomainException.requireNonNull(
@@ -37,6 +37,14 @@ public class Kitchen extends AggregateRoot {
 
     public KitchenName getName() {
         return name;
+    }
+
+    public void changeName(KitchenName newName) {
+        DomainException.requireNonNull(
+                newName,
+                "The new kitchen name cannot be null."
+        );
+        this.name = newName;
     }
 
     @Override
