@@ -11,9 +11,7 @@ public interface KitchenRepository {
 
     Optional<Kitchen> findById(KitchenId id);
 
-    void deleteById(KitchenId id);
+    void delete(Kitchen kitchen);
 
     boolean existsByName(KitchenName name);
-
-    boolean existsById(KitchenId id);
 }

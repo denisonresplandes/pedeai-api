@@ -31,13 +31,8 @@ public class KitchenRepositoryAdapter implements KitchenRepository {
     }
 
     @Override
-    public void deleteById(KitchenId id) {
-        repository.deleteById(id.value());
-    }
-
-    @Override
-    public boolean existsById(KitchenId id) {
-        return repository.existsById(id.value());
+    public void delete(Kitchen kitchen) {
+        repository.delete(KitchenMapper.toEntity(kitchen));
     }
 
     @Override

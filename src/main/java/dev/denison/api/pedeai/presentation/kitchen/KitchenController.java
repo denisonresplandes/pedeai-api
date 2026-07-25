@@ -73,6 +73,7 @@ public class KitchenController {
         return ResponseEntity.created(uri).body(response);
     }
 
+    @Transactional
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable
                                        @NotNull(message = "The kitchen id cannot be null")

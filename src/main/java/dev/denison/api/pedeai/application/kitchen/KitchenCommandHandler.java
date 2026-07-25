@@ -31,12 +31,8 @@ public class KitchenCommandHandler {
 
     public KitchenResponse update(UpdateKitchenCommand command) {
         validate(command, "The update kitchen command cannot be null.");
-        KitchenId id = new KitchenId(command.id());
         KitchenName newName = new KitchenName(command.name());
-
-        Kitchen kitchen = repository.findById(id).orElseThrow(() ->
-                new KitchenNotFoundException(command.id())
-        );
+        Kitchen kitchen = getKitchenOrElseThrow(new KitchenId(command.id()));
 
         if (!kitchen.getName().equals(newName)) {
             ensureNameIsUnique(newName);
@@ -52,9 +48,8 @@ public class KitchenCommandHandler {
 
     public void delete(DeleteKitchenCommand command) {
         validate(command, "The delete kitchen command cannot be null.");
-        KitchenId kitchenId = new KitchenId(command.id());
-        checkExistence(kitchenId);
-        repository.deleteById(kitchenId);
+        Kitchen kitchenToDelete = getKitchenOrElseThrow(new KitchenId(command.id()));
+        repository.delete(kitchenToDelete);
     }
 
     private void validate(Object o, String message) {
@@ -69,9 +64,9 @@ public class KitchenCommandHandler {
         }
     }
 
-    private void checkExistence(KitchenId id) {
-        if (!repository.existsById(id)) {
-            throw new KitchenNotFoundException(id.value());
-        }
+    private Kitchen getKitchenOrElseThrow(KitchenId id) {
+        return repository.findById(id).orElseThrow(() ->
+                new KitchenNotFoundException(id.value())
+        );
     }
 }
