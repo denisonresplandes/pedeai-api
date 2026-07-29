@@ -31,7 +31,6 @@ public class KitchenController {
         this.queryHandler = queryHandler;
         this.commandHandler = commandHandler;
     }
-    // TODO mover mensagens de validação para arquivo.
 
     @GetMapping
     public ResponseEntity<?> find(@RequestParam(value = "name", required = false) String name) {
@@ -43,8 +42,8 @@ public class KitchenController {
 
     @GetMapping("/{id}")
     public KitchenResponse findById(@PathVariable
-                                    @NotNull(message = "The kitchen id cannot be null")
-                                    @Positive(message = "The kitchen id must be a positive number")
+                                    @NotNull(message = "{kitchen.id.required}")
+                                    @Positive(message = "{kitchen.id.positive}")
                                     Long id) {
         return queryHandler.findById(id);
     }
@@ -56,8 +55,8 @@ public class KitchenController {
     @Transactional
     @PutMapping("/{id}")
     public KitchenResponse update(@PathVariable
-                                  @NotNull(message = "The kitchen id cannot be null")
-                                  @Positive(message = "The kitchen id must be a positive number")
+                                  @NotNull(message = "{kitchen.id.required}")
+                                  @Positive(message = "{kitchen.id.positive}")
                                   Long id,
                                   @RequestBody @Valid UpdateKitchenRequest request) {
         return commandHandler.update(request.toCommand(id));
@@ -76,8 +75,8 @@ public class KitchenController {
     @Transactional
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable
-                                       @NotNull(message = "The kitchen id cannot be null")
-                                       @Positive(message = "The kitchen id must be a positive number")
+                                       @NotNull(message = "{kitchen.id.required}")
+                                       @Positive(message = "{kitchen.id.positive}")
                                        Long id) {
         commandHandler.delete(new DeleteKitchenCommand(id));
         return ResponseEntity.noContent().build();

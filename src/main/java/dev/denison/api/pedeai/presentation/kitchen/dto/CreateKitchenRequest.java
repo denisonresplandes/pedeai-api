@@ -5,8 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record CreateKitchenRequest(
-        @NotBlank(message = "The name cannot be empty")
-        @Size(min = 2, message = "The name must be at least 2 characters long")
+        @NotBlank(message = "{kitchen.name.required}")
+        @Size(min = 2, message = "{kitchen.name.size}")
         String name
 ) {
     public CreateKitchenCommand toCommand() {
