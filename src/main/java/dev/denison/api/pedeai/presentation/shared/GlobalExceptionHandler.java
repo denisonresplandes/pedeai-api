@@ -1,9 +1,9 @@
 package dev.denison.api.pedeai.presentation.shared;
 
-import dev.denison.api.pedeai.application.shared.ConflictException;
-import dev.denison.api.pedeai.application.shared.ResourceNotFoundException;
-import dev.denison.api.pedeai.application.shared.ValidationException;
-import dev.denison.api.pedeai.domain.shared.DomainException;
+import dev.denison.api.pedeai.core.application.shared.ConflictException;
+import dev.denison.api.pedeai.core.application.shared.ResourceNotFoundException;
+import dev.denison.api.pedeai.core.application.shared.ValidationException;
+import dev.denison.api.pedeai.core.domain.shared.DomainException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;

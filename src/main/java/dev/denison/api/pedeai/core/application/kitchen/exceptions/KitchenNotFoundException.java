@@ -1,6 +1,6 @@
-package dev.denison.api.pedeai.application.kitchen.exceptions;
+package dev.denison.api.pedeai.core.application.kitchen.exceptions;
 
-import dev.denison.api.pedeai.application.shared.ResourceNotFoundException;
+import dev.denison.api.pedeai.core.application.shared.ResourceNotFoundException;
 
 public class KitchenNotFoundException extends ResourceNotFoundException {
 

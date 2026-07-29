@@ -1,16 +1,16 @@
-package dev.denison.api.pedeai.application.kitchen;
+package dev.denison.api.pedeai.core.application.kitchen;
 
-import dev.denison.api.pedeai.application.kitchen.dto.CreateKitchenCommand;
-import dev.denison.api.pedeai.application.kitchen.dto.DeleteKitchenCommand;
-import dev.denison.api.pedeai.application.kitchen.dto.KitchenResponse;
-import dev.denison.api.pedeai.application.kitchen.dto.UpdateKitchenCommand;
-import dev.denison.api.pedeai.application.kitchen.exceptions.KitchenNameAlreadyExistsException;
-import dev.denison.api.pedeai.application.kitchen.exceptions.KitchenNotFoundException;
-import dev.denison.api.pedeai.application.shared.ValidationException;
-import dev.denison.api.pedeai.domain.kitchen.Kitchen;
-import dev.denison.api.pedeai.domain.kitchen.KitchenRepository;
-import dev.denison.api.pedeai.domain.kitchen.vo.KitchenId;
-import dev.denison.api.pedeai.domain.kitchen.vo.KitchenName;
+import dev.denison.api.pedeai.core.application.kitchen.dto.CreateKitchenCommand;
+import dev.denison.api.pedeai.core.application.kitchen.dto.DeleteKitchenCommand;
+import dev.denison.api.pedeai.core.application.kitchen.dto.KitchenResponse;
+import dev.denison.api.pedeai.core.application.kitchen.dto.UpdateKitchenCommand;
+import dev.denison.api.pedeai.core.application.kitchen.exceptions.KitchenNameAlreadyExistsException;
+import dev.denison.api.pedeai.core.application.kitchen.exceptions.KitchenNotFoundException;
+import dev.denison.api.pedeai.core.application.shared.ValidationException;
+import dev.denison.api.pedeai.core.domain.kitchen.Kitchen;
+import dev.denison.api.pedeai.core.domain.kitchen.KitchenRepository;
+import dev.denison.api.pedeai.core.domain.kitchen.vo.KitchenId;
+import dev.denison.api.pedeai.core.domain.kitchen.vo.KitchenName;
 
 public class KitchenCommandHandler {
 

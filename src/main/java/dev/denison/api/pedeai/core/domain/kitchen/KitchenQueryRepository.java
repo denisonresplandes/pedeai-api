@@ -1,4 +1,4 @@
-package dev.denison.api.pedeai.domain.kitchen;
+package dev.denison.api.pedeai.core.domain.kitchen;
 
 import java.util.List;
 import java.util.Optional;

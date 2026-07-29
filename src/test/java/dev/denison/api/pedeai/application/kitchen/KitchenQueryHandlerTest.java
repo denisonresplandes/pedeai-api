@@ -1,9 +1,10 @@
 package dev.denison.api.pedeai.application.kitchen;
 
-import dev.denison.api.pedeai.application.kitchen.dto.KitchenResponse;
-import dev.denison.api.pedeai.application.kitchen.exceptions.KitchenNotFoundException;
-import dev.denison.api.pedeai.domain.kitchen.KitchenQueryRepository;
-import dev.denison.api.pedeai.domain.kitchen.KitchenSummary;
+import dev.denison.api.pedeai.core.application.kitchen.KitchenQueryHandler;
+import dev.denison.api.pedeai.core.application.kitchen.dto.KitchenResponse;
+import dev.denison.api.pedeai.core.application.kitchen.exceptions.KitchenNotFoundException;
+import dev.denison.api.pedeai.core.domain.kitchen.KitchenQueryRepository;
+import dev.denison.api.pedeai.core.domain.kitchen.KitchenSummary;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

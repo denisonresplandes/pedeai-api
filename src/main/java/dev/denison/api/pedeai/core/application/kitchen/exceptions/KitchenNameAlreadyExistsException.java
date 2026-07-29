@@ -1,6 +1,6 @@
-package dev.denison.api.pedeai.application.kitchen.exceptions;
+package dev.denison.api.pedeai.core.application.kitchen.exceptions;
 
-import dev.denison.api.pedeai.application.shared.ConflictException;
+import dev.denison.api.pedeai.core.application.shared.ConflictException;
 
 public class KitchenNameAlreadyExistsException extends ConflictException {
 

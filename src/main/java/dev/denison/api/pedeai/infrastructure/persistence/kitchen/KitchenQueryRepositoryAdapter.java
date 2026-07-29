@@ -1,7 +1,7 @@
 package dev.denison.api.pedeai.infrastructure.persistence.kitchen;
 
-import dev.denison.api.pedeai.domain.kitchen.KitchenQueryRepository;
-import dev.denison.api.pedeai.domain.kitchen.KitchenSummary;
+import dev.denison.api.pedeai.core.domain.kitchen.KitchenQueryRepository;
+import dev.denison.api.pedeai.core.domain.kitchen.KitchenSummary;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

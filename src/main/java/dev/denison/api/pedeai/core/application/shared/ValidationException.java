@@ -1,14 +1,14 @@
-package dev.denison.api.pedeai.domain.shared;
+package dev.denison.api.pedeai.core.application.shared;
 
-public class DomainException extends RuntimeException {
+public class ValidationException extends RuntimeException {
 
-    public DomainException(String message) {
+    public ValidationException(String message) {
         super(message);
     }
 
     public static void requireNonNull(Object o, String message) {
         if (o == null) {
-            throw new DomainException(message);
+            throw new ValidationException(message);
         }
     }
 
@@ -16,7 +16,7 @@ public class DomainException extends RuntimeException {
         requireNonNull(text, message);
         text = text.trim();
         if (text.isBlank()) {
-            throw new DomainException(message);
+            throw new ValidationException(message);
         }
         return text;
     }
@@ -24,7 +24,7 @@ public class DomainException extends RuntimeException {
     public static void requirePositive(Long number, String message) {
         requireNonNull(number, message);
         if (number <= 0L) {
-            throw new DomainException(message);
+            throw new ValidationException(message);
         }
     }
 }

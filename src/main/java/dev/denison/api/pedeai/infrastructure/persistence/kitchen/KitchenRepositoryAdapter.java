@@ -1,9 +1,9 @@
 package dev.denison.api.pedeai.infrastructure.persistence.kitchen;
 
-import dev.denison.api.pedeai.domain.kitchen.Kitchen;
-import dev.denison.api.pedeai.domain.kitchen.KitchenRepository;
-import dev.denison.api.pedeai.domain.kitchen.vo.KitchenId;
-import dev.denison.api.pedeai.domain.kitchen.vo.KitchenName;
+import dev.denison.api.pedeai.core.domain.kitchen.Kitchen;
+import dev.denison.api.pedeai.core.domain.kitchen.KitchenRepository;
+import dev.denison.api.pedeai.core.domain.kitchen.vo.KitchenId;
+import dev.denison.api.pedeai.core.domain.kitchen.vo.KitchenName;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;

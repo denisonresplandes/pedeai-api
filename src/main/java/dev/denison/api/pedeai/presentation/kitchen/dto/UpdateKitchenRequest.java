@@ -1,6 +1,6 @@
 package dev.denison.api.pedeai.presentation.kitchen.dto;
 
-import dev.denison.api.pedeai.application.kitchen.dto.UpdateKitchenCommand;
+import dev.denison.api.pedeai.core.application.kitchen.dto.UpdateKitchenCommand;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 

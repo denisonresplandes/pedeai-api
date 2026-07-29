@@ -1,4 +1,4 @@
-package dev.denison.api.pedeai.application.shared;
+package dev.denison.api.pedeai.core.application.shared;
 
 public class ConflictException extends RuntimeException {
 

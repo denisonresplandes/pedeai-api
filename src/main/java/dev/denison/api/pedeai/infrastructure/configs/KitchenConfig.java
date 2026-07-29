@@ -1,9 +1,9 @@
 package dev.denison.api.pedeai.infrastructure.configs;
 
-import dev.denison.api.pedeai.application.kitchen.KitchenCommandHandler;
-import dev.denison.api.pedeai.application.kitchen.KitchenQueryHandler;
-import dev.denison.api.pedeai.domain.kitchen.KitchenQueryRepository;
-import dev.denison.api.pedeai.domain.kitchen.KitchenRepository;
+import dev.denison.api.pedeai.core.application.kitchen.KitchenCommandHandler;
+import dev.denison.api.pedeai.core.application.kitchen.KitchenQueryHandler;
+import dev.denison.api.pedeai.core.domain.kitchen.KitchenQueryRepository;
+import dev.denison.api.pedeai.core.domain.kitchen.KitchenRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

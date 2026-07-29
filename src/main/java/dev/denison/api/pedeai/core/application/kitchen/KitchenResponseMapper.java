@@ -1,8 +1,8 @@
-package dev.denison.api.pedeai.application.kitchen;
+package dev.denison.api.pedeai.core.application.kitchen;
 
-import dev.denison.api.pedeai.application.kitchen.dto.KitchenResponse;
-import dev.denison.api.pedeai.domain.kitchen.Kitchen;
-import dev.denison.api.pedeai.domain.kitchen.KitchenSummary;
+import dev.denison.api.pedeai.core.application.kitchen.dto.KitchenResponse;
+import dev.denison.api.pedeai.core.domain.kitchen.Kitchen;
+import dev.denison.api.pedeai.core.domain.kitchen.KitchenSummary;
 
 public final class KitchenResponseMapper {
 

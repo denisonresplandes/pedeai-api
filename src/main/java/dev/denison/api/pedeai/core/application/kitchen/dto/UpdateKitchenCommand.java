@@ -1,6 +1,6 @@
-package dev.denison.api.pedeai.application.kitchen.dto;
+package dev.denison.api.pedeai.core.application.kitchen.dto;
 
-import dev.denison.api.pedeai.application.shared.ValidationException;
+import dev.denison.api.pedeai.core.application.shared.ValidationException;
 
 public record UpdateKitchenCommand(
         Long id,

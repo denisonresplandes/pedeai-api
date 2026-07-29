@@ -1,4 +1,4 @@
-package dev.denison.api.pedeai.application.kitchen.dto;
+package dev.denison.api.pedeai.core.application.kitchen.dto;
 
 public record KitchenResponse(
         Long id,

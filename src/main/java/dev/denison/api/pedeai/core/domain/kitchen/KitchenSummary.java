@@ -1,6 +1,6 @@
-package dev.denison.api.pedeai.domain.kitchen;
+package dev.denison.api.pedeai.core.domain.kitchen;
 
-import dev.denison.api.pedeai.domain.shared.DomainException;
+import dev.denison.api.pedeai.core.domain.shared.DomainException;
 
 public record KitchenSummary(
         Long id,

@@ -1,8 +1,8 @@
-package dev.denison.api.pedeai.application.kitchen;
+package dev.denison.api.pedeai.core.application.kitchen;
 
-import dev.denison.api.pedeai.application.kitchen.dto.KitchenResponse;
-import dev.denison.api.pedeai.application.kitchen.exceptions.KitchenNotFoundException;
-import dev.denison.api.pedeai.domain.kitchen.KitchenQueryRepository;
+import dev.denison.api.pedeai.core.application.kitchen.dto.KitchenResponse;
+import dev.denison.api.pedeai.core.application.kitchen.exceptions.KitchenNotFoundException;
+import dev.denison.api.pedeai.core.domain.kitchen.KitchenQueryRepository;
 
 import java.util.List;
 

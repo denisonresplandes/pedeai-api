@@ -1,9 +1,9 @@
-package dev.denison.api.pedeai.domain.kitchen;
+package dev.denison.api.pedeai.core.domain.kitchen;
 
-import dev.denison.api.pedeai.domain.kitchen.vo.KitchenId;
-import dev.denison.api.pedeai.domain.kitchen.vo.KitchenName;
-import dev.denison.api.pedeai.domain.shared.AggregateRoot;
-import dev.denison.api.pedeai.domain.shared.DomainException;
+import dev.denison.api.pedeai.core.domain.kitchen.vo.KitchenId;
+import dev.denison.api.pedeai.core.domain.kitchen.vo.KitchenName;
+import dev.denison.api.pedeai.core.domain.shared.AggregateRoot;
+import dev.denison.api.pedeai.core.domain.shared.DomainException;
 
 public class Kitchen extends AggregateRoot {
 

@@ -1,8 +1,8 @@
 package dev.denison.api.pedeai.infrastructure.persistence.kitchen;
 
-import dev.denison.api.pedeai.domain.kitchen.Kitchen;
-import dev.denison.api.pedeai.domain.kitchen.vo.KitchenId;
-import dev.denison.api.pedeai.domain.kitchen.vo.KitchenName;
+import dev.denison.api.pedeai.core.domain.kitchen.Kitchen;
+import dev.denison.api.pedeai.core.domain.kitchen.vo.KitchenId;
+import dev.denison.api.pedeai.core.domain.kitchen.vo.KitchenName;
 
 import java.util.Objects;
 
