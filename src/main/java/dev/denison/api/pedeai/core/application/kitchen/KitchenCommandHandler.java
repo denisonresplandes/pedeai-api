@@ -12,6 +12,8 @@ import dev.denison.api.pedeai.core.domain.kitchen.KitchenRepository;
 import dev.denison.api.pedeai.core.domain.kitchen.vo.KitchenId;
 import dev.denison.api.pedeai.core.domain.kitchen.vo.KitchenName;
 
+import java.util.Objects;
+
 public class KitchenCommandHandler {
 
     private final KitchenRepository repository;
@@ -34,7 +36,7 @@ public class KitchenCommandHandler {
         KitchenName newName = new KitchenName(command.name());
         Kitchen kitchen = getKitchenOrElseThrow(new KitchenId(command.id()));
 
-        if (!kitchen.getName().equals(newName)) {
+        if (!isEquals(kitchen.getName(), newName)) {
             ensureNameIsUnique(newName);
         }
         /*
@@ -57,6 +59,10 @@ public class KitchenCommandHandler {
     }
 
     private void ensureNameIsUnique(KitchenName name) {
+        /*
+         * checa se já existe alguma outra Kitchen
+         * no banco com este nome.
+         * */
         if (repository.existsByName(name)) {
             throw new KitchenNameAlreadyExistsException("This %s already exists."
                     .formatted(name.value())
@@ -68,5 +74,11 @@ public class KitchenCommandHandler {
         return repository.findById(id).orElseThrow(() ->
                 new KitchenNotFoundException(id.value())
         );
+    }
+
+    private boolean isEquals(KitchenName name1, KitchenName name2) {
+        String n1 = name1.value().toLowerCase();
+        String n2 = name2.value().toLowerCase();
+        return Objects.equals(n1, n2);
     }
 }
