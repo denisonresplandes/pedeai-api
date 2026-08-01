@@ -23,7 +23,7 @@ public class KitchenQueryRepositoryAdapter implements KitchenQueryRepository {
 
     @Override
     public Optional<KitchenSummary> findByName(String name) {
-        return queryRepository.findSummaryByName(name);
+        return queryRepository.findSummaryByNameIgnoreCase(name);
     }
 
     @Override

@@ -64,9 +64,7 @@ public class KitchenCommandHandler {
          * no banco com este nome.
          * */
         if (repository.existsByName(name)) {
-            throw new KitchenNameAlreadyExistsException("This %s already exists."
-                    .formatted(name.value())
-            );
+            throw new KitchenNameAlreadyExistsException(name.value());
         }
     }
 
@@ -76,9 +74,9 @@ public class KitchenCommandHandler {
         );
     }
 
-    private boolean isEquals(KitchenName name1, KitchenName name2) {
-        String n1 = name1.value().toLowerCase();
-        String n2 = name2.value().toLowerCase();
-        return Objects.equals(n1, n2);
+    private boolean isEquals(KitchenName currentName, KitchenName newName) {
+        String current = currentName.value().toLowerCase();
+        String _new = newName.value().toLowerCase();
+        return Objects.equals(current, _new);
     }
 }

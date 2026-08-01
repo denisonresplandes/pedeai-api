@@ -11,12 +11,12 @@ import org.springframework.context.annotation.Configuration;
 public class KitchenConfig {
 
     @Bean
-    KitchenQueryHandler queryHandler(KitchenQueryRepository queryRepository) {
+    KitchenQueryHandler kitchenQueryHandler(KitchenQueryRepository queryRepository) {
         return new KitchenQueryHandler(queryRepository);
     }
 
     @Bean
-    KitchenCommandHandler commandHandler(KitchenRepository repository) {
+    KitchenCommandHandler kitchenCommandHandler(KitchenRepository repository) {
         return new KitchenCommandHandler(repository);
     }
 }

@@ -4,7 +4,7 @@ import dev.denison.api.pedeai.core.application.shared.ConflictException;
 
 public class KitchenNameAlreadyExistsException extends ConflictException {
 
-    public KitchenNameAlreadyExistsException(String message) {
-        super(message);
+    public KitchenNameAlreadyExistsException(String name) {
+        super("This %s already exists.".formatted(name));
     }
 }
