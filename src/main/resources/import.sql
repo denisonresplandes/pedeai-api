@@ -1,7 +1,7 @@
 # KITCHEN
-INSERT INTO tb_kitchen(name) VALUES ('Indiana');
-INSERT INTO tb_kitchen(name) VALUES ('Tailandesa');
+INSERT INTO tb_kitchen(id, name) VALUES (1, 'Indiana');
+INSERT INTO tb_kitchen(id, name) VALUES (2, 'Tailandesa');
 
 # RESTAURANT
-INSERT INTO tb_restaurant(name) VALUES ('Ilha Verde');
-INSERT INTO tb_restaurant(name) VALUES ('Quero Mais');
+INSERT INTO tb_restaurant(id, name, kitchen_id) VALUES (1, 'Ilha Verde', 1);
+INSERT INTO tb_restaurant(id, name, kitchen_id) VALUES (2, 'Quero Mais', 1);

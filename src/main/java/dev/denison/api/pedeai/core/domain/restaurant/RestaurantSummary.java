@@ -4,7 +4,8 @@ import dev.denison.api.pedeai.core.domain.shared.DomainException;
 
 public record RestaurantSummary(
         Long id,
-        String name
+        String name,
+        Long kitchenId
 ) {
     public RestaurantSummary {
         DomainException.requirePositive(
@@ -18,5 +19,9 @@ public record RestaurantSummary(
         if (name.length() < 2) {
             throw new DomainException("Restaurant name must be at least 2 characters long.");
         }
+        DomainException.requirePositive(
+                kitchenId,
+                "Kitchen id must be a positive number."
+        );
     }
 }

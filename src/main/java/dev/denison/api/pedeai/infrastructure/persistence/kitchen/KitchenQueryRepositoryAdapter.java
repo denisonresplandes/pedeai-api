@@ -2,6 +2,7 @@ package dev.denison.api.pedeai.infrastructure.persistence.kitchen;
 
 import dev.denison.api.pedeai.core.domain.kitchen.KitchenQueryRepository;
 import dev.denison.api.pedeai.core.domain.kitchen.KitchenSummary;
+import dev.denison.api.pedeai.core.domain.kitchen.vo.KitchenId;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -29,5 +30,10 @@ public class KitchenQueryRepositoryAdapter implements KitchenQueryRepository {
     @Override
     public List<KitchenSummary> findAll() {
         return queryRepository.findBy();
+    }
+
+    @Override
+    public boolean existsById(KitchenId id) {
+        return queryRepository.existsSummaryById(id.value());
     }
 }

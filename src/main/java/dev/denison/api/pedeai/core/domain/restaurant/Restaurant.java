@@ -1,5 +1,6 @@
 package dev.denison.api.pedeai.core.domain.restaurant;
 
+import dev.denison.api.pedeai.core.domain.kitchen.vo.KitchenId;
 import dev.denison.api.pedeai.core.domain.restaurant.vo.RestaurantId;
 import dev.denison.api.pedeai.core.domain.restaurant.vo.RestaurantName;
 import dev.denison.api.pedeai.core.domain.shared.AggregateRoot;
@@ -10,25 +11,35 @@ public class Restaurant extends AggregateRoot {
     private final RestaurantId id;
     private RestaurantName name;
 
-    private Restaurant(RestaurantId id, RestaurantName name) {
+    private KitchenId kitchenId;
+
+    private Restaurant(RestaurantId id, RestaurantName name, KitchenId kitchenId) {
         DomainException.requireNonNull(
                 name,
                 "Restaurant name cannot be null."
         );
+        DomainException.requireNonNull(
+                kitchenId,
+                "Kitchen ID cannot be null"
+        );
         this.id = id;
         this.name = name;
+        this.kitchenId = kitchenId;
     }
 
-    public static Restaurant create(RestaurantName name) {
-        return new Restaurant(null, name);
+    public static Restaurant create(RestaurantName name,
+                                    KitchenId kitchenId) {
+        return new Restaurant(null, name, kitchenId);
     }
 
-    public static Restaurant restore(RestaurantId id, RestaurantName name) {
+    public static Restaurant restore(RestaurantId id,
+                                     RestaurantName name,
+                                     KitchenId kitchenId) {
         DomainException.requireNonNull(
                 id,
                 "Restaurant id cannot be null."
         );
-        return new Restaurant(id, name);
+        return new Restaurant(id, name, kitchenId);
     }
 
     public RestaurantId getId() {
@@ -45,6 +56,18 @@ public class Restaurant extends AggregateRoot {
                 "The new restaurant name cannot be null."
         );
         this.name = newName;
+    }
+
+    public KitchenId getKitchenId() {
+        return kitchenId;
+    }
+
+    public void changeKitchen(KitchenId kitchenId) {
+        DomainException.requireNonNull(
+                kitchenId,
+                "Kitchen ID cannot be null"
+        );
+        this.kitchenId = kitchenId;
     }
 
     @Override

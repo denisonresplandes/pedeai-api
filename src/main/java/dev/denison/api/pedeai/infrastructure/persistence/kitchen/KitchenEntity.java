@@ -3,11 +3,9 @@ package dev.denison.api.pedeai.infrastructure.persistence.kitchen;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "tb_kitchen",
-        uniqueConstraints = {
+@Table(name = "tb_kitchen", uniqueConstraints = {
             @UniqueConstraint(name = "unq_kitchen_name", columnNames = "name")
-        }
-) // TODO add flyway depois.
+}) // TODO add flyway depois.
 public class KitchenEntity {
 
     @Id
@@ -18,6 +16,10 @@ public class KitchenEntity {
     private String name;
 
     KitchenEntity() {}
+
+    public KitchenEntity(Long id) {
+        this.id = id;
+    }
 
     public KitchenEntity(Long id, String name) {
         this.id = id;

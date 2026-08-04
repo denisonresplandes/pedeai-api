@@ -11,14 +11,16 @@ public final class RestaurantResponseMapper {
     public static RestaurantResponse toResponse(RestaurantSummary summary) {
         return new RestaurantResponse(
                 summary.id(),
-                summary.name()
+                summary.name(),
+                summary.kitchenId()
         );
     }
 
     public static RestaurantResponse toResponse(Restaurant restaurant) {
         return new RestaurantResponse(
                 restaurant.getId().value(),
-                restaurant.getName().value()
+                restaurant.getName().value(),
+                restaurant.getKitchenId().value()
         );
     }
 }

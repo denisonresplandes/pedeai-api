@@ -14,4 +14,6 @@ public interface SpringDataKitchenQueryRepository extends Repository<KitchenEnti
     Optional<KitchenSummary> findSummaryById(Long id);
 
     Optional<KitchenSummary> findSummaryByNameIgnoreCase(String name);
+
+    boolean existsSummaryById(Long id);
 }

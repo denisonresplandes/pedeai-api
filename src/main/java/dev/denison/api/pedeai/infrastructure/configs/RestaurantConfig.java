@@ -2,6 +2,7 @@ package dev.denison.api.pedeai.infrastructure.configs;
 
 import dev.denison.api.pedeai.core.application.restaurant.RestaurantCommandHandler;
 import dev.denison.api.pedeai.core.application.restaurant.RestaurantQueryHandler;
+import dev.denison.api.pedeai.core.domain.kitchen.KitchenQueryRepository;
 import dev.denison.api.pedeai.core.domain.restaurant.RestaurantQueryRepository;
 import dev.denison.api.pedeai.core.domain.restaurant.RestaurantRepository;
 import org.springframework.context.annotation.Bean;
@@ -16,7 +17,8 @@ public class RestaurantConfig {
     }
 
     @Bean
-    RestaurantCommandHandler restaurantCommandHandler(RestaurantRepository repository) {
-        return new RestaurantCommandHandler(repository);
+    RestaurantCommandHandler restaurantCommandHandler(RestaurantRepository repository,
+                                                      KitchenQueryRepository kitchenQueryRepository) {
+        return new RestaurantCommandHandler(repository, kitchenQueryRepository);
     }
 }
