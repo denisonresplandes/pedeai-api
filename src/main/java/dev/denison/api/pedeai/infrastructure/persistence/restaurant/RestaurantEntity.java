@@ -21,6 +21,7 @@ public class RestaurantEntity {
     @ManyToOne
     @JoinColumn(
             name = "kitchen_id",
+            nullable = false,
             foreignKey = @ForeignKey(name = "fk_restaurant_kitchen")
     )
     private KitchenEntity kitchen;

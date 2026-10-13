@@ -1,5 +1,6 @@
 package dev.denison.api.pedeai.presentation.shared;
 
+import dev.denison.api.pedeai.core.application.payment.exceptions.PaymentNotFoundException;
 import dev.denison.api.pedeai.core.application.shared.ConflictException;
 import dev.denison.api.pedeai.core.application.shared.ResourceNotFoundException;
 import dev.denison.api.pedeai.core.application.shared.ValidationException;
@@ -97,5 +98,16 @@ public class GlobalExceptionHandler {
         problemDetail.setProperty("timestamp", Instant.now());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
+    }
+
+    @ExceptionHandler(PaymentNotFoundException.class)
+    public ResponseEntity<ProblemDetail> handlePaymentNotFoundException(PaymentNotFoundException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.NOT_FOUND,
+                ex.getMessage()
+        );
+        problemDetail.setTitle("Payment Not Found");
+        problemDetail.setProperty("timestamp", Instant.now());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetail);
     }
 }
