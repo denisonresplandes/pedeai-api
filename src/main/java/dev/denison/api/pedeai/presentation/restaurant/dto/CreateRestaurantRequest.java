@@ -14,7 +14,12 @@ public record CreateRestaurantRequest(
         @Size(min = 2, message = "{restaurant.name.size}")
         String name,
 
-        @NotNull(message = "{kitchen.id.require}")
+        /*
+         * O texto entre chaves é uma CHAVE de messages.properties, resolvida pelo Bean Validation.
+         * Se a chave não existir (ex.: "{kitchen.id.require}", sem o "d"), nenhum erro de
+         * compilação aparece: o cliente apenas recebe o texto literal "{chave}".
+         */
+        @NotNull(message = "{kitchen.id.required}")
         @Positive(message = "{kitchen.id.positive}")
         Long kitchenId,
 

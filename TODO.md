@@ -59,7 +59,7 @@ Regra de ouro: **todas as classes em `core.*` (domain e application) são Java p
 - [x] Revisão geral da arquitetura (esta lista).
 
 ### Fase 1 — Correção de bugs
-- [ ] **1. (B1)** Corrigir a chave `{kitchen.id.require}` → `{kitchen.id.required}`.
+- [x] **1. (B1)** Corrigir a chave `{kitchen.id.require}` → `{kitchen.id.required}`. Criado `RestaurantControllerTest` (`@WebMvcTest`) com 2 casos: `kitchenId` ausente e `kitchenId` não positivo.
 - [ ] **2. (B2, B3)** Mover as regras de nome para os VOs `KitchenName`/`RestaurantName` (mínimo 2, máximo 50) e espelhar `@Size(max = 50)` nos Requests. Testes de domínio dos VOs.
 - [ ] **3. (B4)** `@Valid` no `StripeWebhookController`.
 - [ ] **4. (B5)** `PaymentNotFoundException extends ResourceNotFoundException` (apagar o handler dedicado no `GlobalExceptionHandler`); `UnsupportedPaymentMethodException` passa a estender uma exceção-base com handler.
@@ -107,7 +107,7 @@ Fluxo de escrita de uma cozinha hoje: `Request → Command → KitchenName → K
 
 ### Fase 7 — Testes
 Cada etapa acima já traz os testes da sua mudança. Aqui ficam as lacunas de cobertura:
-- [ ] Testes de controller com `@WebMvcTest` e sufixo `*Test` (`KitchenControllerTest`, `RestaurantControllerTest`, Payment/Stripe).
+- [ ] Testes de controller com `@WebMvcTest` e sufixo `*Test`: `RestaurantControllerTest` já existe (só validação de `kitchenId`); faltam os demais endpoints, `KitchenControllerTest` e Payment/Stripe.
 - [ ] Testes de domínio puros (sem Mockito): VOs, `Restaurant`, `Payment` (transições), `Money`.
 - [ ] `@DataJpaTest`: JOIN FETCH sem N+1, unique, FK de kitchen em uso, `save` por dirty checking.
 - [ ] `PedeaiApplicationTests` depende do MySQL local; usar Testcontainers/H2 quando o curso permitir.
