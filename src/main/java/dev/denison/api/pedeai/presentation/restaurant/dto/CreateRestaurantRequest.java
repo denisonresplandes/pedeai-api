@@ -2,6 +2,7 @@ package dev.denison.api.pedeai.presentation.restaurant.dto;
 
 import dev.denison.api.pedeai.core.application.restaurant.dto.CreateRestaurantCommand;
 import dev.denison.api.pedeai.core.domain.payment.PaymentMethod;
+import dev.denison.api.pedeai.core.domain.restaurant.vo.RestaurantName;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -11,7 +12,11 @@ import java.util.Set;
 
 public record CreateRestaurantRequest(
         @NotBlank(message = "{restaurant.name.required}")
-        @Size(min = 2, message = "{restaurant.name.size}")
+        @Size(
+                min = RestaurantName.MIN_LENGTH,
+                max = RestaurantName.MAX_LENGTH,
+                message = "{restaurant.name.size}"
+        )
         String name,
 
         /*

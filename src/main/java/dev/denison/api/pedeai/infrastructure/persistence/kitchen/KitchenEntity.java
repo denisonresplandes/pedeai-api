@@ -1,5 +1,6 @@
 package dev.denison.api.pedeai.infrastructure.persistence.kitchen;
 
+import dev.denison.api.pedeai.core.domain.kitchen.vo.KitchenName;
 import jakarta.persistence.*;
 
 @Entity
@@ -12,7 +13,7 @@ public class KitchenEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(nullable = false, unique = true, length = KitchenName.MAX_LENGTH)
     private String name;
 
     KitchenEntity() {}

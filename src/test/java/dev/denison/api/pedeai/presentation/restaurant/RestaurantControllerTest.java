@@ -11,6 +11,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -22,6 +23,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @WebMvcTest(RestaurantController.class)
 class RestaurantControllerTest {
+
+    private static final String SIZE_MESSAGE = "The restaurant name must be between 2 and 50 characters long";
 
     @Autowired
     private MockMvc mockMvc;
@@ -51,6 +54,34 @@ class RestaurantControllerTest {
                         .content(body))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors.kitchenId").value("The kitchen id cannot be null"));
+    }
+
+    @Test
+    @DisplayName("Deve devolver 400 com a mensagem de tamanho ao criar restaurante com 51 caracteres no nome.")
+    void shouldReturnBadRequestWhenCreatingWithNameLongerThanMaximum() throws Exception {
+        String body = """
+                {"name": "%s", "kitchenId": 1, "paymentMethods": ["CASH"]}
+                """.formatted("x".repeat(51));
+
+        mockMvc.perform(post("/restaurants")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.name").value(SIZE_MESSAGE));
+    }
+
+    @Test
+    @DisplayName("Deve devolver 400 com a mensagem de tamanho ao atualizar restaurante com 51 caracteres no nome.")
+    void shouldReturnBadRequestWhenUpdatingWithNameLongerThanMaximum() throws Exception {
+        String body = """
+                {"name": "%s"}
+                """.formatted("x".repeat(51));
+
+        mockMvc.perform(put("/restaurants/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.name").value(SIZE_MESSAGE));
     }
 
     @Test

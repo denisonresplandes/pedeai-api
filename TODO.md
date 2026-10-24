@@ -33,9 +33,9 @@ Regra de ouro: **todas as classes em `core.*` (domain e application) são Java p
 
 | # | Bug | Como reproduzir / efeito | Etapa |
 |---|---|---|---|
-| B1 | Chave de mensagem com typo em `CreateRestaurantRequest.java:17` (`{kitchen.id.require}`; a existente é `kitchen.id.required`) | `POST /restaurants` sem `kitchenId` devolve o texto literal `{kitchen.id.require}` | 1 |
-| B2 | Nome com mais de 50 caracteres não é validado (coluna `length = 50`) | `POST /kitchens` com nome de 51+ caracteres → 500 (erro de banco) | 2 |
-| B3 | Regra "nome ≥ 2 caracteres" não existe no domínio (`KitchenName`, `RestaurantName`); só em Request, Command e Summary | Quem criar o VO direto (teste, outro caso de uso) burla a regra | 2 |
+| B1 | Chave de mensagem com typo em `CreateRestaurantRequest.java:17` (`{kitchen.id.require}`; a existente é `kitchen.id.required`) | `POST /restaurants` sem `kitchenId` devolve o texto literal `{kitchen.id.require}` | 1 ✅ |
+| B2 | Nome com mais de 50 caracteres não é validado (coluna `length = 50`) | `POST /kitchens` com nome de 51+ caracteres → 500 (erro de banco) | 2 ✅ |
+| B3 | Regra "nome ≥ 2 caracteres" não existe no domínio (`KitchenName`, `RestaurantName`); só em Request, Command e Summary | Quem criar o VO direto (teste, outro caso de uso) burla a regra | 2 ✅ |
 | B4 | Webhook do Stripe sem `@Valid` | `POST /webhooks/stripe` sem `status` → NPE → 500; `@NotNull`/`@Positive` do payload nunca rodam | 3 |
 | B5 | `PaymentNotFoundException` e `UnsupportedPaymentMethodException` estendem `RuntimeException` | A segunda não tem handler → 500 | 4 |
 | B6 | Sem handler para `DataIntegrityViolationException` | Corrida entre `existsByName` e o INSERT, ou entre "kitchen em uso" e um INSERT de restaurant → 500 em vez de 409 | 5 |
@@ -60,7 +60,7 @@ Regra de ouro: **todas as classes em `core.*` (domain e application) são Java p
 
 ### Fase 1 — Correção de bugs
 - [x] **1. (B1)** Corrigir a chave `{kitchen.id.require}` → `{kitchen.id.required}`. Criado `RestaurantControllerTest` (`@WebMvcTest`) com 2 casos: `kitchenId` ausente e `kitchenId` não positivo.
-- [ ] **2. (B2, B3)** Mover as regras de nome para os VOs `KitchenName`/`RestaurantName` (mínimo 2, máximo 50) e espelhar `@Size(max = 50)` nos Requests. Testes de domínio dos VOs.
+- [x] **2. (B2, B3)** Regras de nome nos VOs `KitchenName`/`RestaurantName` (mínimo 2, máximo 50, medidos após o trim), expostas como `MIN_LENGTH`/`MAX_LENGTH`; `@Size(min, max)` dos 4 Requests e `length` da coluna nas Entities leem essas constantes (fonte única); mensagens `*.name.size` com `{min}`/`{max}`. Testes: `KitchenNameTest`, `RestaurantNameTest`, novo `KitchenControllerTest` e casos extras no `RestaurantControllerTest`. Validado no app real (51 caracteres: 500 → 400).
 - [ ] **3. (B4)** `@Valid` no `StripeWebhookController`.
 - [ ] **4. (B5)** `PaymentNotFoundException extends ResourceNotFoundException` (apagar o handler dedicado no `GlobalExceptionHandler`); `UnsupportedPaymentMethodException` passa a estender uma exceção-base com handler.
 - [ ] **5. (B6)** Handler de `DataIntegrityViolationException` → 409 no `GlobalExceptionHandler`.
@@ -107,7 +107,7 @@ Fluxo de escrita de uma cozinha hoje: `Request → Command → KitchenName → K
 
 ### Fase 7 — Testes
 Cada etapa acima já traz os testes da sua mudança. Aqui ficam as lacunas de cobertura:
-- [ ] Testes de controller com `@WebMvcTest` e sufixo `*Test`: `RestaurantControllerTest` já existe (só validação de `kitchenId`); faltam os demais endpoints, `KitchenControllerTest` e Payment/Stripe.
+- [ ] Testes de controller com `@WebMvcTest` e sufixo `*Test`: `RestaurantControllerTest` e `KitchenControllerTest` já existem (validação de nome e `kitchenId`); faltam os demais endpoints (GET, DELETE, 404/409) e Payment/Stripe.
 - [ ] Testes de domínio puros (sem Mockito): VOs, `Restaurant`, `Payment` (transições), `Money`.
 - [ ] `@DataJpaTest`: JOIN FETCH sem N+1, unique, FK de kitchen em uso, `save` por dirty checking.
 - [ ] `PedeaiApplicationTests` depende do MySQL local; usar Testcontainers/H2 quando o curso permitir.

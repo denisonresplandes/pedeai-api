@@ -2,6 +2,7 @@ package dev.denison.api.pedeai.infrastructure.persistence.restaurant;
 
 import dev.denison.api.pedeai.core.domain.payment.PaymentMethod;
 import dev.denison.api.pedeai.infrastructure.persistence.kitchen.KitchenEntity;
+import dev.denison.api.pedeai.core.domain.restaurant.vo.RestaurantName;
 import jakarta.persistence.*;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -20,7 +21,7 @@ public class RestaurantEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(nullable = false, unique = true, length = RestaurantName.MAX_LENGTH)
     private String name;
 
     @ManyToOne
