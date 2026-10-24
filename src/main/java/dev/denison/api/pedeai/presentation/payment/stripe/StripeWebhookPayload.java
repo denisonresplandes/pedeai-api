@@ -4,9 +4,13 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 public record StripeWebhookPayload(
-        @NotNull
+        @NotNull(message = "{payment.status.required}")
         StripePayloadStatus status,
-        @Positive
+
+        // @Positive sozinho aceita null (a maioria das constraints considera null válido),
+        // por isso o @NotNull é necessário para exigir o campo.
+        @NotNull(message = "{payment.id.required}")
+        @Positive(message = "{payment.id.positive}")
         Long paymentId
 ) {
 }

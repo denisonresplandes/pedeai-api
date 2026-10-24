@@ -2,6 +2,7 @@ package dev.denison.api.pedeai.presentation.payment.stripe;
 
 import dev.denison.api.pedeai.core.application.payment.PaymentCommandHandler;
 import dev.denison.api.pedeai.core.application.payment.dto.ConfirmPaymentCommand;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,7 +23,14 @@ public class StripeWebhookController {
     // chamado pelos servidores do Stripe
     @PostMapping
     @Transactional
-    public ResponseEntity<Void> handleStripeCallback(@RequestBody StripeWebhookPayload payload) {
+    public ResponseEntity<Void> handleStripeCallback(@RequestBody @Valid StripeWebhookPayload payload) {
+        /*
+        * Sem o @Valid, as anotações do StripeWebhookPayload (@NotNull, @Positive) são apenas
+        * decoração: o Bean Validation só roda no parâmetro marcado com @Valid. Antes, um payload
+        * sem "status" passava direto e estourava NullPointerException (500) logo abaixo; agora
+        * o Spring responde 400 (MethodArgumentNotValidException -> GlobalExceptionHandler)
+        * antes de entrar no método.
+        * */
         /*
         * Validações de segurança do payload do Stripe entrra aqui
         * */
