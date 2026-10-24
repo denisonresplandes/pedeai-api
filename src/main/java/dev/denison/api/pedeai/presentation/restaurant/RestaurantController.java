@@ -10,7 +10,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -48,7 +47,6 @@ public class RestaurantController {
         return queryHandler.findById(id);
     }
 
-    @Transactional
     @PutMapping("/{id}")
     public RestaurantResponse update(@PathVariable
                                      @NotNull(message = "{restaurant.id.required}")
@@ -68,7 +66,6 @@ public class RestaurantController {
         return ResponseEntity.created(uri).body(response);
     }
 
-    @Transactional
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable
                                        @NotNull(message = "{restaurant.id.required}")

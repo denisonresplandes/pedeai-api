@@ -11,7 +11,9 @@ public interface RestaurantRepository {
 
     Optional<Restaurant> findById(RestaurantId id);
 
-    void delete(Restaurant restaurant);
+    boolean existsById(RestaurantId id);
+
+    void deleteById(RestaurantId id);
 
     boolean existsByName(RestaurantName name);
 }

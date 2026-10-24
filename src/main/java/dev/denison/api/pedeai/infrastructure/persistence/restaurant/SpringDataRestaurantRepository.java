@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SpringDataRestaurantRepository extends JpaRepository<RestaurantEntity, Long> {
 
-    boolean existsByName(String name);
+    boolean existsByNameIgnoreCase(String name);
 }

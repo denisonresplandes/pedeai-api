@@ -59,8 +59,11 @@ public class RestaurantCommandHandler {
 
     public void delete(DeleteRestaurantCommand command) {
         validate(command, "The delete restaurant command cannot be null.");
-        Restaurant restaurantToDelete = getRestaurantOrElseThrow(new RestaurantId(command.id()));
-        repository.delete(restaurantToDelete);
+        RestaurantId id = new RestaurantId(command.id());
+        if (!repository.existsById(id)) {
+            throw new RestaurantNotFoundException(id.value());
+        }
+        repository.deleteById(id);
     }
 
     private boolean isEquals(RestaurantName currentName, RestaurantName newName) {
