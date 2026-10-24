@@ -1,8 +1,13 @@
 package dev.denison.api.pedeai.infrastructure.persistence.restaurant;
 
+import dev.denison.api.pedeai.core.domain.payment.PaymentMethod;
 import dev.denison.api.pedeai.infrastructure.persistence.kitchen.KitchenEntity;
 import jakarta.persistence.*;
 import org.hibernate.annotations.DynamicUpdate;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "tb_restaurant", uniqueConstraints = {
@@ -25,6 +30,18 @@ public class RestaurantEntity {
             foreignKey = @ForeignKey(name = "fk_restaurant_kitchen")
     )
     private KitchenEntity kitchen;
+
+    @ElementCollection
+    @CollectionTable(
+            name = "tb_restaurant_payment_method",
+            joinColumns = @JoinColumn(
+                    name = "restaurant_id",
+                    foreignKey = @ForeignKey(name = "fk_restaurant_payment_method")
+            )
+    )
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method", nullable = false)
+    private Set<PaymentMethod> paymentMethods = new HashSet<>();
 
     RestaurantEntity() {}
 
@@ -52,6 +69,18 @@ public class RestaurantEntity {
 
     public void setKitchen(KitchenEntity kitchen) {
         this.kitchen = kitchen;
+    }
+
+    public Set<PaymentMethod> getPaymentMethods() {
+        return Collections.unmodifiableSet(this.paymentMethods);
+    }
+
+    public void addPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethods.add(paymentMethod);
+    }
+
+    public void removePaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethods.remove(paymentMethod);
     }
 
     @Override

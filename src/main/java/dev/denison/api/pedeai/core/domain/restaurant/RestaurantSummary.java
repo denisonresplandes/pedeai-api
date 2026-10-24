@@ -1,11 +1,15 @@
 package dev.denison.api.pedeai.core.domain.restaurant;
 
+import dev.denison.api.pedeai.core.domain.payment.PaymentMethod;
 import dev.denison.api.pedeai.core.domain.shared.DomainException;
+
+import java.util.Set;
 
 public record RestaurantSummary(
         Long id,
         String name,
-        Long kitchenId
+        Long kitchenId,
+        Set<PaymentMethod> paymentMethods
 ) {
     public RestaurantSummary {
         DomainException.requirePositive(

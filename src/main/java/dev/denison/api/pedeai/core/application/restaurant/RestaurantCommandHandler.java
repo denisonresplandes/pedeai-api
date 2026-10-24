@@ -38,6 +38,7 @@ public class RestaurantCommandHandler {
         ensureKitchenWithIdExists(kitchenId);
 
         Restaurant restaurantToSave = Restaurant.create(name, kitchenId);
+        command.paymentMethods().forEach(restaurantToSave::addPaymentMethod);
         Restaurant restaurantSaved = repository.save(restaurantToSave);
         return RestaurantResponseMapper.toResponse(restaurantSaved);
     }

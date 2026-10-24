@@ -18,16 +18,18 @@ public class RestaurantQueryRepositoryAdapter implements RestaurantQueryReposito
 
     @Override
     public Optional<RestaurantSummary> findById(Long id) {
-        return queryRepository.findSummaryById(id);
+        return queryRepository.findById(id).map(RestaurantMapper::toSummary);
     }
 
     @Override
     public Optional<RestaurantSummary> findByName(String name) {
-        return queryRepository.findSummaryByNameIgnoreCase(name);
+        return queryRepository.findByNameIgnoreCase(name).map(RestaurantMapper::toSummary);
     }
 
     @Override
     public List<RestaurantSummary> findAll() {
-        return queryRepository.findBy();
+        return queryRepository.findAll().stream()
+                .map(RestaurantMapper::toSummary)
+                .toList();
     }
 }

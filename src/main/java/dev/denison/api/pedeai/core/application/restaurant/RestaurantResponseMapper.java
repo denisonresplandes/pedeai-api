@@ -12,7 +12,8 @@ public final class RestaurantResponseMapper {
         return new RestaurantResponse(
                 summary.id(),
                 summary.name(),
-                summary.kitchenId()
+                summary.kitchenId(),
+                summary.paymentMethods()
         );
     }
 
@@ -20,7 +21,8 @@ public final class RestaurantResponseMapper {
         return new RestaurantResponse(
                 restaurant.getId().value(),
                 restaurant.getName().value(),
-                restaurant.getKitchenId().value()
+                restaurant.getKitchenId().value(),
+                restaurant.getPaymentMethods()
         );
     }
 }

@@ -1,10 +1,14 @@
 package dev.denison.api.pedeai.core.application.restaurant.dto;
 
 import dev.denison.api.pedeai.core.application.shared.ValidationException;
+import dev.denison.api.pedeai.core.domain.payment.PaymentMethod;
+
+import java.util.Set;
 
 public record CreateRestaurantCommand(
         String name,
-        Long kitchenId
+        Long kitchenId,
+        Set<PaymentMethod> paymentMethods
 ) {
     public CreateRestaurantCommand {
         name = ValidationException.requireNonBlank(
@@ -18,5 +22,6 @@ public record CreateRestaurantCommand(
                 kitchenId,
                 "Kitchen id must be greater than zero."
         );
+        paymentMethods = paymentMethods == null ? Set.of() : paymentMethods;
     }
 }

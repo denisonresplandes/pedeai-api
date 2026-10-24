@@ -1,10 +1,15 @@
 package dev.denison.api.pedeai.core.domain.restaurant;
 
 import dev.denison.api.pedeai.core.domain.kitchen.vo.KitchenId;
+import dev.denison.api.pedeai.core.domain.payment.PaymentMethod;
 import dev.denison.api.pedeai.core.domain.restaurant.vo.RestaurantId;
 import dev.denison.api.pedeai.core.domain.restaurant.vo.RestaurantName;
 import dev.denison.api.pedeai.core.domain.shared.AggregateRoot;
 import dev.denison.api.pedeai.core.domain.shared.DomainException;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Restaurant extends AggregateRoot {
 
@@ -12,6 +17,8 @@ public class Restaurant extends AggregateRoot {
     private RestaurantName name;
 
     private KitchenId kitchenId;
+
+    private Set<PaymentMethod> paymentMethods = new HashSet<>();
 
     private Restaurant(RestaurantId id, RestaurantName name, KitchenId kitchenId) {
         DomainException.requireNonNull(
@@ -25,6 +32,7 @@ public class Restaurant extends AggregateRoot {
         this.id = id;
         this.name = name;
         this.kitchenId = kitchenId;
+        this.paymentMethods.add(PaymentMethod.CASH);
     }
 
     public static Restaurant create(RestaurantName name,
@@ -68,6 +76,21 @@ public class Restaurant extends AggregateRoot {
                 "Kitchen ID cannot be null"
         );
         this.kitchenId = kitchenId;
+    }
+
+    public Set<PaymentMethod> getPaymentMethods() {
+        return Collections.unmodifiableSet(paymentMethods);
+    }
+
+    public void addPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethods.add(paymentMethod);
+    }
+
+    public void removePaymentMethod(PaymentMethod paymentMethod) {
+        if (PaymentMethod.CASH.equals(paymentMethod)) {
+            throw new DomainException("CASH is mandatory and cannot be removed from the accepted payment methods.");
+        }
+        this.paymentMethods.remove(paymentMethod);
     }
 
     @Override
