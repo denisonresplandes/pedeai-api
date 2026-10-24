@@ -5,6 +5,7 @@ import dev.denison.api.pedeai.core.application.kitchen.dto.CreateKitchenCommand;
 import dev.denison.api.pedeai.core.application.kitchen.dto.DeleteKitchenCommand;
 import dev.denison.api.pedeai.core.application.kitchen.dto.KitchenResponse;
 import dev.denison.api.pedeai.core.application.kitchen.dto.UpdateKitchenCommand;
+import dev.denison.api.pedeai.core.application.kitchen.exceptions.KitchenInUseException;
 import dev.denison.api.pedeai.core.application.kitchen.exceptions.KitchenNameAlreadyExistsException;
 import dev.denison.api.pedeai.core.application.kitchen.exceptions.KitchenNotFoundException;
 import dev.denison.api.pedeai.core.application.shared.ValidationException;
@@ -12,6 +13,7 @@ import dev.denison.api.pedeai.core.domain.kitchen.Kitchen;
 import dev.denison.api.pedeai.core.domain.kitchen.KitchenRepository;
 import dev.denison.api.pedeai.core.domain.kitchen.vo.KitchenId;
 import dev.denison.api.pedeai.core.domain.kitchen.vo.KitchenName;
+import dev.denison.api.pedeai.core.domain.restaurant.RestaurantQueryRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,6 +32,9 @@ class KitchenCommandHandlerTest {
 
     @Mock
     private KitchenRepository repository;
+
+    @Mock
+    private RestaurantQueryRepository restaurantQueryRepository;
 
     @InjectMocks
     private KitchenCommandHandler commandHandler;
@@ -136,6 +141,7 @@ class KitchenCommandHandlerTest {
                 new KitchenName("To Be Deleted")
         );
         when(repository.findById(any(KitchenId.class))).thenReturn(Optional.of(existingKitchen));
+        when(restaurantQueryRepository.existsByKitchenId(any(KitchenId.class))).thenReturn(false);
 
         // ACT
         commandHandler.delete(command);
@@ -143,6 +149,22 @@ class KitchenCommandHandlerTest {
         // ASSERT
         verify(repository, times(1)).findById(any(KitchenId.class));
         verify(repository, times(1)).delete(any(Kitchen.class));
+    }
+
+    @Test
+    @DisplayName("Deve lançar KitchenInUseException ao excluir uma cozinha com restaurantes vinculados.")
+    void shouldThrowExceptionWhenDeletingKitchenInUse() {
+        // ARRANGE
+        DeleteKitchenCommand command = new DeleteKitchenCommand(1L);
+        Kitchen existingKitchen = Kitchen.restore(new KitchenId(1L), new KitchenName("In Use"));
+        when(repository.findById(any(KitchenId.class))).thenReturn(Optional.of(existingKitchen));
+        when(restaurantQueryRepository.existsByKitchenId(any(KitchenId.class))).thenReturn(true);
+
+        // ACT
+        assertThrows(KitchenInUseException.class, () -> commandHandler.delete(command));
+
+        // ASSERT
+        verify(repository, never()).delete(any(Kitchen.class));
     }
 
     @Test

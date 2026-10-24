@@ -1,5 +1,6 @@
 package dev.denison.api.pedeai.infrastructure.persistence.restaurant;
 
+import dev.denison.api.pedeai.core.domain.kitchen.vo.KitchenId;
 import dev.denison.api.pedeai.core.domain.restaurant.RestaurantQueryRepository;
 import dev.denison.api.pedeai.core.domain.restaurant.RestaurantSummary;
 import org.springframework.stereotype.Repository;
@@ -24,6 +25,11 @@ public class RestaurantQueryRepositoryAdapter implements RestaurantQueryReposito
     @Override
     public Optional<RestaurantSummary> findByName(String name) {
         return queryRepository.findByNameIgnoreCase(name).map(RestaurantMapper::toSummary);
+    }
+
+    @Override
+    public boolean existsByKitchenId(KitchenId kitchenId) {
+        return queryRepository.existsByKitchenId(kitchenId.value());
     }
 
     @Override
