@@ -2,6 +2,7 @@ package dev.denison.api.pedeai.presentation.payment.stripe;
 
 import dev.denison.api.pedeai.core.application.payment.PaymentCommandHandler;
 import dev.denison.api.pedeai.core.application.payment.dto.ConfirmPaymentCommand;
+import dev.denison.api.pedeai.core.application.payment.exceptions.PaymentNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -14,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.ArgumentMatchers.any;
@@ -97,6 +99,21 @@ class StripeWebhookControllerTest {
         verify(commandHandler).confirmPaymentFromWebhook(captor.capture());
         assertEquals(7L, captor.getValue().paymentId());
         assertTrue(captor.getValue().isSuccess());
+    }
+
+    @Test
+    @DisplayName("Deve devolver 404 com a mensagem específica quando o pagamento do webhook não existe.")
+    void shouldReturnNotFoundWhenPaymentDoesNotExist() throws Exception {
+        doThrow(new PaymentNotFoundException(999L))
+                .when(commandHandler).confirmPaymentFromWebhook(any());
+
+        mockMvc.perform(post(URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"status": "SUCCESS", "paymentId": 999}
+                                """))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.detail").value("Payment with id 999 not found."));
     }
 
     @Test
