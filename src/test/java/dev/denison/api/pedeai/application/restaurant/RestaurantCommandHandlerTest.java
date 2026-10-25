@@ -16,13 +16,16 @@ import dev.denison.api.pedeai.core.domain.restaurant.Restaurant;
 import dev.denison.api.pedeai.core.domain.restaurant.RestaurantRepository;
 import dev.denison.api.pedeai.core.domain.restaurant.vo.RestaurantId;
 import dev.denison.api.pedeai.core.domain.restaurant.vo.RestaurantName;
+import dev.denison.api.pedeai.core.domain.shared.DomainException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -47,8 +50,8 @@ class RestaurantCommandHandlerTest {
     void shouldCreateRestaurantSuccessfully() {
         CreateRestaurantCommand command = new CreateRestaurantCommand("Ilha Verde", 1L, Set.of(PaymentMethod.PIX));
         Restaurant savedRestaurant = Restaurant.restore(
-                new RestaurantId(1L), new RestaurantName("Ilha Verde"), new KitchenId(1L));
-        savedRestaurant.addPaymentMethod(PaymentMethod.PIX);
+                new RestaurantId(1L), new RestaurantName("Ilha Verde"), new KitchenId(1L),
+                Set.of(PaymentMethod.CASH, PaymentMethod.PIX));
 
         when(repository.existsByName(any(RestaurantName.class))).thenReturn(false);
         when(kitchenQueryRepository.existsById(any(KitchenId.class))).thenReturn(true);
@@ -64,6 +67,40 @@ class RestaurantCommandHandlerTest {
         verify(repository, times(1)).existsByName(any(RestaurantName.class));
         verify(kitchenQueryRepository, times(1)).existsById(any(KitchenId.class));
         verify(repository, times(1)).save(any(Restaurant.class));
+    }
+
+    @Test
+    @DisplayName("Deve enviar ao repositório um restaurante com os métodos informados mais CASH.")
+    void shouldPassPaymentMethodsToTheAggregate() {
+        CreateRestaurantCommand command = new CreateRestaurantCommand("Ilha Verde", 1L, Set.of(PaymentMethod.PIX));
+        when(repository.existsByName(any(RestaurantName.class))).thenReturn(false);
+        when(kitchenQueryRepository.existsById(any(KitchenId.class))).thenReturn(true);
+        when(repository.save(any(Restaurant.class))).thenAnswer(invocation -> {
+            Restaurant toSave = invocation.getArgument(0);
+            return Restaurant.restore(new RestaurantId(1L), toSave.getName(), toSave.getKitchenId(),
+                    toSave.getPaymentMethods());
+        });
+
+        commandHandler.create(command);
+
+        ArgumentCaptor<Restaurant> captor = ArgumentCaptor.forClass(Restaurant.class);
+        verify(repository).save(captor.capture());
+        assertEquals(Set.of(PaymentMethod.CASH, PaymentMethod.PIX), captor.getValue().getPaymentMethods());
+    }
+
+    @Test
+    @DisplayName("Deve lançar DomainException e não salvar quando os métodos de pagamento contêm null.")
+    void shouldThrowExceptionWhenPaymentMethodsContainNull() {
+        Set<PaymentMethod> withNull = new HashSet<>();
+        withNull.add(null);
+        CreateRestaurantCommand command = new CreateRestaurantCommand("Ilha Verde", 1L, withNull);
+        when(repository.existsByName(any(RestaurantName.class))).thenReturn(false);
+        when(kitchenQueryRepository.existsById(any(KitchenId.class))).thenReturn(true);
+
+        DomainException exception = assertThrows(DomainException.class, () -> commandHandler.create(command));
+
+        assertEquals("Payment method cannot be null.", exception.getMessage());
+        verify(repository, never()).save(any(Restaurant.class));
     }
 
     @Test
@@ -104,7 +141,8 @@ class RestaurantCommandHandlerTest {
     void shouldUpdateRestaurantSuccessfully() {
         UpdateRestaurantCommand command = new UpdateRestaurantCommand(1L, "New Name");
         Restaurant existing = Restaurant.restore(
-                new RestaurantId(1L), new RestaurantName("Old Name"), new KitchenId(1L));
+                new RestaurantId(1L), new RestaurantName("Old Name"), new KitchenId(1L),
+                Set.of(PaymentMethod.CASH));
 
         when(repository.findById(any(RestaurantId.class))).thenReturn(Optional.of(existing));
         when(repository.existsByName(any(RestaurantName.class))).thenReturn(false);
@@ -123,7 +161,8 @@ class RestaurantCommandHandlerTest {
     void shouldSkipUniquenessCheckWhenNameDiffersOnlyByCase() {
         UpdateRestaurantCommand command = new UpdateRestaurantCommand(1L, "ilha verde");
         Restaurant existing = Restaurant.restore(
-                new RestaurantId(1L), new RestaurantName("Ilha Verde"), new KitchenId(1L));
+                new RestaurantId(1L), new RestaurantName("Ilha Verde"), new KitchenId(1L),
+                Set.of(PaymentMethod.CASH));
 
         when(repository.findById(any(RestaurantId.class))).thenReturn(Optional.of(existing));
         when(repository.save(any(Restaurant.class))).thenReturn(existing);
@@ -140,7 +179,8 @@ class RestaurantCommandHandlerTest {
     void shouldThrowExceptionWhenUpdatingToExistingName() {
         UpdateRestaurantCommand command = new UpdateRestaurantCommand(1L, "Quero Mais");
         Restaurant existing = Restaurant.restore(
-                new RestaurantId(1L), new RestaurantName("Ilha Verde"), new KitchenId(1L));
+                new RestaurantId(1L), new RestaurantName("Ilha Verde"), new KitchenId(1L),
+                Set.of(PaymentMethod.CASH));
 
         when(repository.findById(any(RestaurantId.class))).thenReturn(Optional.of(existing));
         when(repository.existsByName(any(RestaurantName.class))).thenReturn(true);

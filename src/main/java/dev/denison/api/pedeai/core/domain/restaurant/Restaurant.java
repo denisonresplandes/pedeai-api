@@ -18,9 +18,12 @@ public class Restaurant extends AggregateRoot {
 
     private KitchenId kitchenId;
 
-    private Set<PaymentMethod> paymentMethods = new HashSet<>();
+    private final Set<PaymentMethod> paymentMethods;
 
-    private Restaurant(RestaurantId id, RestaurantName name, KitchenId kitchenId) {
+    private Restaurant(RestaurantId id,
+                       RestaurantName name,
+                       KitchenId kitchenId,
+                       Set<PaymentMethod> paymentMethods) {
         DomainException.requireNonNull(
                 name,
                 "Restaurant name cannot be null."
@@ -29,25 +32,46 @@ public class Restaurant extends AggregateRoot {
                 kitchenId,
                 "Kitchen ID cannot be null"
         );
+        DomainException.requireNonNull(
+                paymentMethods,
+                "Payment methods cannot be null."
+        );
         this.id = id;
         this.name = name;
         this.kitchenId = kitchenId;
-        this.paymentMethods.add(PaymentMethod.CASH);
+        // Cópia defensiva: o aggregate não compartilha o Set do chamador (nem aceita null dentro dele).
+        this.paymentMethods = new HashSet<>();
+        paymentMethods.forEach(paymentMethod -> {
+            requirePaymentMethod(paymentMethod);
+            this.paymentMethods.add(paymentMethod);
+        });
     }
 
+    /*
+     * Restaurante NOVO. A regra de negócio "CASH é sempre aceito" vale a partir daqui, por isso
+     * ele é incluído mesmo que o chamador não o informe.
+     */
     public static Restaurant create(RestaurantName name,
-                                    KitchenId kitchenId) {
-        return new Restaurant(null, name, kitchenId);
+                                    KitchenId kitchenId,
+                                    Set<PaymentMethod> paymentMethods) {
+        Restaurant restaurant = new Restaurant(null, name, kitchenId, paymentMethods);
+        restaurant.addPaymentMethod(PaymentMethod.CASH);
+        return restaurant;
     }
 
+    /*
+     * Reconstrói um restaurante que JÁ existe no banco, exatamente como foi persistido.
+     * Não acrescenta CASH: restore não aplica regra de negócio nova, só rehidrata o estado.
+     */
     public static Restaurant restore(RestaurantId id,
                                      RestaurantName name,
-                                     KitchenId kitchenId) {
+                                     KitchenId kitchenId,
+                                     Set<PaymentMethod> paymentMethods) {
         DomainException.requireNonNull(
                 id,
                 "Restaurant id cannot be null."
         );
-        return new Restaurant(id, name, kitchenId);
+        return new Restaurant(id, name, kitchenId, paymentMethods);
     }
 
     public RestaurantId getId() {
@@ -83,14 +107,23 @@ public class Restaurant extends AggregateRoot {
     }
 
     public void addPaymentMethod(PaymentMethod paymentMethod) {
+        requirePaymentMethod(paymentMethod);
         this.paymentMethods.add(paymentMethod);
     }
 
     public void removePaymentMethod(PaymentMethod paymentMethod) {
+        requirePaymentMethod(paymentMethod);
         if (PaymentMethod.CASH.equals(paymentMethod)) {
             throw new DomainException("CASH is mandatory and cannot be removed from the accepted payment methods.");
         }
         this.paymentMethods.remove(paymentMethod);
+    }
+
+    private static void requirePaymentMethod(PaymentMethod paymentMethod) {
+        DomainException.requireNonNull(
+                paymentMethod,
+                "Payment method cannot be null."
+        );
     }
 
     @Override

@@ -16,13 +16,12 @@ public final class RestaurantMapper {
     private RestaurantMapper() {}
 
     public static Restaurant toDomain(RestaurantEntity entity) {
-        Restaurant restore = Restaurant.restore(
+        return Restaurant.restore(
                 new RestaurantId(entity.getId()),
                 new RestaurantName(entity.getName()),
-                new KitchenId(entity.getKitchen().getId())
+                new KitchenId(entity.getKitchen().getId()),
+                entity.getPaymentMethods()
         );
-        entity.getPaymentMethods().forEach(restore::addPaymentMethod);
-        return restore;
     }
 
     public static RestaurantSummary toSummary(RestaurantEntity entity) {
