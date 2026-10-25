@@ -1,5 +1,6 @@
 package dev.denison.api.pedeai.core.application.restaurant;
 
+import dev.denison.api.pedeai.core.application.kitchen.KitchenQueryRepository;
 import dev.denison.api.pedeai.core.application.kitchen.exceptions.KitchenNotFoundException;
 import dev.denison.api.pedeai.core.application.restaurant.dto.CreateRestaurantCommand;
 import dev.denison.api.pedeai.core.application.restaurant.dto.DeleteRestaurantCommand;
@@ -8,7 +9,6 @@ import dev.denison.api.pedeai.core.application.restaurant.dto.UpdateRestaurantCo
 import dev.denison.api.pedeai.core.application.restaurant.exceptions.RestaurantNameAlreadyExistsException;
 import dev.denison.api.pedeai.core.application.restaurant.exceptions.RestaurantNotFoundException;
 import dev.denison.api.pedeai.core.application.shared.ValidationException;
-import dev.denison.api.pedeai.core.domain.kitchen.KitchenQueryRepository;
 import dev.denison.api.pedeai.core.domain.kitchen.vo.KitchenId;
 import dev.denison.api.pedeai.core.domain.restaurant.Restaurant;
 import dev.denison.api.pedeai.core.domain.restaurant.RestaurantRepository;

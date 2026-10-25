@@ -1,8 +1,8 @@
 package dev.denison.api.pedeai.infrastructure.persistence.restaurant;
 
+import dev.denison.api.pedeai.core.application.restaurant.RestaurantQueryRepository;
+import dev.denison.api.pedeai.core.application.restaurant.dto.RestaurantResponse;
 import dev.denison.api.pedeai.core.domain.kitchen.vo.KitchenId;
-import dev.denison.api.pedeai.core.domain.restaurant.RestaurantQueryRepository;
-import dev.denison.api.pedeai.core.domain.restaurant.RestaurantSummary;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -18,13 +18,13 @@ public class RestaurantQueryRepositoryAdapter implements RestaurantQueryReposito
     }
 
     @Override
-    public Optional<RestaurantSummary> findById(Long id) {
-        return queryRepository.findById(id).map(RestaurantMapper::toSummary);
+    public Optional<RestaurantResponse> findById(Long id) {
+        return queryRepository.findById(id).map(RestaurantMapper::toResponse);
     }
 
     @Override
-    public Optional<RestaurantSummary> findByName(String name) {
-        return queryRepository.findByNameIgnoreCase(name).map(RestaurantMapper::toSummary);
+    public Optional<RestaurantResponse> findByName(String name) {
+        return queryRepository.findByNameIgnoreCase(name).map(RestaurantMapper::toResponse);
     }
 
     @Override
@@ -33,9 +33,9 @@ public class RestaurantQueryRepositoryAdapter implements RestaurantQueryReposito
     }
 
     @Override
-    public List<RestaurantSummary> findAll() {
+    public List<RestaurantResponse> findAll() {
         return queryRepository.findAll().stream()
-                .map(RestaurantMapper::toSummary)
+                .map(RestaurantMapper::toResponse)
                 .toList();
     }
 }

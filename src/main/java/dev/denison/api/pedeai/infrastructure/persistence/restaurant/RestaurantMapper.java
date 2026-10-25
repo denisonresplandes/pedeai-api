@@ -1,9 +1,9 @@
 package dev.denison.api.pedeai.infrastructure.persistence.restaurant;
 
+import dev.denison.api.pedeai.core.application.restaurant.dto.RestaurantResponse;
 import dev.denison.api.pedeai.core.domain.kitchen.vo.KitchenId;
 import dev.denison.api.pedeai.core.domain.payment.PaymentMethod;
 import dev.denison.api.pedeai.core.domain.restaurant.Restaurant;
-import dev.denison.api.pedeai.core.domain.restaurant.RestaurantSummary;
 import dev.denison.api.pedeai.core.domain.restaurant.vo.RestaurantId;
 import dev.denison.api.pedeai.core.domain.restaurant.vo.RestaurantName;
 import dev.denison.api.pedeai.infrastructure.persistence.kitchen.KitchenEntity;
@@ -24,8 +24,8 @@ public final class RestaurantMapper {
         );
     }
 
-    public static RestaurantSummary toSummary(RestaurantEntity entity) {
-        return new RestaurantSummary(
+    public static RestaurantResponse toResponse(RestaurantEntity entity) {
+        return new RestaurantResponse(
                 entity.getId(),
                 entity.getName(),
                 entity.getKitchen().getId(),
