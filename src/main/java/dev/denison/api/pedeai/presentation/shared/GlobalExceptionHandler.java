@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -19,33 +19,24 @@ import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/*
+ * Cada handler só decide QUAL status, título e mensagem uma exceção merece; montar o ProblemDetail
+ * (RFC 9457) é trabalho do helper problem(). Devolver o ProblemDetail direto basta: o Spring usa o
+ * status que está nele e responde com application/problem+json.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ProblemDetail> handleResourceNotFoundException(ResourceNotFoundException ex) {
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
-                HttpStatus.NOT_FOUND,
-                ex.getMessage()
-        );
-        problemDetail.setTitle("Resource Not Found");
-        problemDetail.setProperty("timestamp", Instant.now());
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetail);
+    public ProblemDetail handleResourceNotFoundException(ResourceNotFoundException ex) {
+        return problem(HttpStatus.NOT_FOUND, "Resource Not Found", ex.getMessage());
     }
 
     @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<ProblemDetail> handleConflictException(ConflictException ex) {
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
-                HttpStatus.CONFLICT,
-                ex.getMessage()
-        );
-        problemDetail.setTitle("Resource Conflict");
-        problemDetail.setProperty("timestamp", Instant.now());
-
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(problemDetail);
+    public ProblemDetail handleConflictException(ConflictException ex) {
+        return problem(HttpStatus.CONFLICT, "Resource Conflict", ex.getMessage());
     }
 
     /*
@@ -65,73 +56,73 @@ public class GlobalExceptionHandler {
      *   um bug; o log com a causa raiz é o que permite descobrir.
      */
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ProblemDetail> handleDataIntegrityViolationException(
-            DataIntegrityViolationException ex) {
+    public ProblemDetail handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
         log.warn("Data integrity violation: {}", ex.getMostSpecificCause().getMessage());
-
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+        return problem(
                 HttpStatus.CONFLICT,
+                "Resource Conflict",
                 "The operation could not be completed because it conflicts with existing data."
         );
-        problemDetail.setTitle("Resource Conflict");
-        problemDetail.setProperty("timestamp", Instant.now());
-
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(problemDetail);
     }
 
     @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<ProblemDetail> handleValidationException(ValidationException ex) {
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
-                HttpStatus.BAD_REQUEST,
-                ex.getMessage()
-        );
-        problemDetail.setTitle("Application Validation Error");
-        problemDetail.setProperty("timestamp", Instant.now());
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
+    public ProblemDetail handleValidationException(ValidationException ex) {
+        return problem(HttpStatus.BAD_REQUEST, "Application Validation Error", ex.getMessage());
     }
 
     @ExceptionHandler(DomainException.class)
-    public ResponseEntity<ProblemDetail> handleDomainException(DomainException ex) {
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
-                HttpStatus.BAD_REQUEST,
-                ex.getMessage()
-        );
-        problemDetail.setTitle("Domain Rule Violation");
-        problemDetail.setProperty("timestamp", Instant.now());
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
+    public ProblemDetail handleDomainException(DomainException ex) {
+        return problem(HttpStatus.BAD_REQUEST, "Domain Rule Violation", ex.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ProblemDetail> handleMethodArgumentNotValidException(
-            MethodArgumentNotValidException ex) {
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+    public ProblemDetail handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+        ProblemDetail problem = problem(
                 HttpStatus.BAD_REQUEST,
+                "Web Validation Error",
                 "Validation failed for one or more fields"
         );
-        problemDetail.setTitle("Web Validation Error");
-        problemDetail.setProperty("timestamp", Instant.now());
 
         Map<String, String> errors = new LinkedHashMap<>();
         ex.getBindingResult().getFieldErrors().forEach(error ->
                 errors.put(error.getField(), error.getDefaultMessage())
         );
-        problemDetail.setProperty("errors", errors);
+        problem.setProperty("errors", errors);
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
+        return problem;
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ProblemDetail> handleConstraintViolationException(
-            ConstraintViolationException ex) {
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
-                HttpStatus.BAD_REQUEST,
-                ex.getMessage()
-        );
-        problemDetail.setTitle("Parameter Validation Error");
-        problemDetail.setProperty("timestamp", Instant.now());
+    public ProblemDetail handleConstraintViolationException(ConstraintViolationException ex) {
+        return problem(HttpStatus.BAD_REQUEST, "Parameter Validation Error", ex.getMessage());
+    }
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
+    /*
+     * Corpo da requisição ilegível: JSON malformado, tipo incompatível, valor de enum que não
+     * existe (ex.: "method": "FOO"), null dentro de uma lista ou corpo ausente.
+     *
+     * Sem este handler o Spring responde 400 no formato padrão dele ({timestamp, status, error,
+     * path}), diferente do resto da API, e registra o erro em WARN. Ao assumir a exceção, o log
+     * passa a ser responsabilidade daqui.
+     *
+     * O detail é genérico de propósito: a mensagem do Jackson cita nomes internos (pacotes e
+     * classes, ex.: "dev.denison...PaymentMethod") que não devem chegar ao cliente. Ela vai só
+     * para o log, o mesmo critério do handler de integridade acima.
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ProblemDetail handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+        log.warn("Unreadable request body: {}", ex.getMostSpecificCause().getMessage());
+        return problem(
+                HttpStatus.BAD_REQUEST,
+                "Malformed Request Body",
+                "The request body is missing, malformed or contains an invalid value."
+        );
+    }
+
+    private static ProblemDetail problem(HttpStatus status, String title, String detail) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, detail);
+        problem.setTitle(title);
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
     }
 }
