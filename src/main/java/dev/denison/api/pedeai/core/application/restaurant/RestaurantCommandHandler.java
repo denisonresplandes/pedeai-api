@@ -31,10 +31,12 @@ public class RestaurantCommandHandler {
     public RestaurantResponse create(CreateRestaurantCommand command) {
         validate(command, "The create restaurant command cannot be null.");
 
+        // Primeiro monta todos os VOs (só valida, não acessa o banco); depois consulta. Assim uma
+        // entrada inválida é recusada sem nenhuma ida ao banco, como acontecia com o Command.
         RestaurantName name = new RestaurantName(command.name());
-        ensureNameIsUnique(name);
-
         KitchenId kitchenId = new KitchenId(command.kitchenId());
+
+        ensureNameIsUnique(name);
         ensureKitchenWithIdExists(kitchenId);
 
         Restaurant restaurantToSave = Restaurant.create(name, kitchenId, command.paymentMethods());

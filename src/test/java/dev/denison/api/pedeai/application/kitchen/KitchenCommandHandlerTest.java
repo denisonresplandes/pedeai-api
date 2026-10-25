@@ -14,6 +14,7 @@ import dev.denison.api.pedeai.core.domain.kitchen.KitchenRepository;
 import dev.denison.api.pedeai.core.domain.kitchen.vo.KitchenId;
 import dev.denison.api.pedeai.core.domain.kitchen.vo.KitchenName;
 import dev.denison.api.pedeai.core.domain.restaurant.RestaurantQueryRepository;
+import dev.denison.api.pedeai.core.domain.shared.DomainException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -182,5 +183,43 @@ class KitchenCommandHandlerTest {
         // ASSERT
         verify(repository, times(1)).findById(any(KitchenId.class));
         verify(repository, never()).delete(any(Kitchen.class));
+    }
+
+    /*
+     * Os Commands não validam mais nada (etapa 9): a entrada inválida é barrada pelo Request
+     * (mensagem amigável, na borda da API) e pelos VOs (invariantes do domínio, valem para qualquer
+     * chamador). Estes testes garantem que o VO continua protegendo e que isso acontece ANTES de
+     * qualquer acesso ao repositório.
+     */
+    @Test
+    @DisplayName("Deve lançar DomainException (do VO) quando o nome tem menos de 2 caracteres depois do trim.")
+    void shouldRejectNameTooShortAfterTrim() {
+        CreateKitchenCommand command = new CreateKitchenCommand(" a ");
+
+        assertThrows(DomainException.class, () -> commandHandler.create(command));
+
+        verifyNoInteractions(repository);
+    }
+
+    @Test
+    @DisplayName("Deve lançar DomainException (do VO) ao atualizar com id não positivo.")
+    void shouldRejectNonPositiveIdOnUpdate() {
+        UpdateKitchenCommand command = new UpdateKitchenCommand(0L, "Valid Name");
+
+        assertThrows(DomainException.class, () -> commandHandler.update(command));
+
+        verifyNoInteractions(repository);
+    }
+
+    @Test
+    @DisplayName("Deve lançar DomainException (do VO) ao excluir com id não positivo ou nulo.")
+    void shouldRejectInvalidIdOnDelete() {
+        DeleteKitchenCommand zero = new DeleteKitchenCommand(0L);
+        DeleteKitchenCommand missing = new DeleteKitchenCommand(null);
+
+        assertThrows(DomainException.class, () -> commandHandler.delete(zero));
+        assertThrows(DomainException.class, () -> commandHandler.delete(missing));
+
+        verifyNoInteractions(repository, restaurantQueryRepository);
     }
 }

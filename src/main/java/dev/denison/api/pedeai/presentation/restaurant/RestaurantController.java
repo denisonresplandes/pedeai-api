@@ -7,7 +7,6 @@ import dev.denison.api.pedeai.core.application.restaurant.dto.RestaurantResponse
 import dev.denison.api.pedeai.presentation.restaurant.dto.CreateRestaurantRequest;
 import dev.denison.api.pedeai.presentation.restaurant.dto.UpdateRestaurantRequest;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -41,7 +40,6 @@ public class RestaurantController {
 
     @GetMapping("/{id}")
     public RestaurantResponse findById(@PathVariable
-                                    @NotNull(message = "{restaurant.id.required}")
                                     @Positive(message = "{restaurant.id.positive}")
                                     Long id) {
         return queryHandler.findById(id);
@@ -49,7 +47,6 @@ public class RestaurantController {
 
     @PutMapping("/{id}")
     public RestaurantResponse update(@PathVariable
-                                     @NotNull(message = "{restaurant.id.required}")
                                      @Positive(message = "{restaurant.id.positive}")
                                      Long id,
                                      @RequestBody @Valid UpdateRestaurantRequest request) {
@@ -68,7 +65,6 @@ public class RestaurantController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable
-                                       @NotNull(message = "{restaurant.id.required}")
                                        @Positive(message = "{restaurant.id.positive}")
                                        Long id) {
         commandHandler.delete(new DeleteRestaurantCommand(id));

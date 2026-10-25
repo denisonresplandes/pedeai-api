@@ -12,6 +12,7 @@ import dev.denison.api.pedeai.core.domain.payment.PaymentMethod;
 import dev.denison.api.pedeai.core.domain.payment.PaymentRepository;
 import dev.denison.api.pedeai.core.domain.payment.PaymentStatus;
 import dev.denison.api.pedeai.core.domain.payment.vo.PaymentId;
+import dev.denison.api.pedeai.core.domain.shared.DomainException;
 import dev.denison.api.pedeai.core.domain.shared.Money;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /*
@@ -77,5 +79,42 @@ class PaymentCommandHandlerTest {
         );
 
         assertInstanceOf(ResourceNotFoundException.class, ex);
+    }
+
+    /*
+     * Os Commands não validam mais nada (etapa 9): o domínio (Payment, PaymentId) é quem recusa
+     * entrada inválida, e isso acontece antes de qualquer acesso ao repositório.
+     */
+    @Test
+    @DisplayName("Deve lançar DomainException (do Payment) sem salvar nada quando o método é nulo.")
+    void shouldRejectNullMethodBeforeSaving() {
+        PaymentCommandHandler handler = new PaymentCommandHandler(paymentRepository, List.of());
+        ProcessPaymentCommand command = new ProcessPaymentCommand(new Money(BigDecimal.TEN), null);
+
+        assertThrows(DomainException.class, () -> handler.processPayment(command));
+
+        verifyNoInteractions(paymentRepository);
+    }
+
+    @Test
+    @DisplayName("Deve lançar DomainException (do Payment) sem salvar nada quando o valor é nulo.")
+    void shouldRejectNullAmountBeforeSaving() {
+        PaymentCommandHandler handler = new PaymentCommandHandler(paymentRepository, List.of());
+        ProcessPaymentCommand command = new ProcessPaymentCommand(null, PaymentMethod.CASH);
+
+        assertThrows(DomainException.class, () -> handler.processPayment(command));
+
+        verifyNoInteractions(paymentRepository);
+    }
+
+    @Test
+    @DisplayName("Deve lançar DomainException (do PaymentId) sem consultar o banco quando o id não é positivo.")
+    void shouldRejectNonPositivePaymentIdBeforeQuerying() {
+        PaymentCommandHandler handler = new PaymentCommandHandler(paymentRepository, List.of());
+        ConfirmPaymentCommand command = new ConfirmPaymentCommand(0L, true);
+
+        assertThrows(DomainException.class, () -> handler.confirmPaymentFromWebhook(command));
+
+        verifyNoInteractions(paymentRepository);
     }
 }

@@ -1,27 +1,22 @@
 package dev.denison.api.pedeai.core.application.restaurant.dto;
 
-import dev.denison.api.pedeai.core.application.shared.ValidationException;
 import dev.denison.api.pedeai.core.domain.payment.PaymentMethod;
 
 import java.util.Set;
 
+/*
+ * Sem validação (veja CreateKitchenCommand): nome e kitchenId são validados pelo Request e pelos
+ * VOs RestaurantName/KitchenId.
+ */
 public record CreateRestaurantCommand(
         String name,
         Long kitchenId,
         Set<PaymentMethod> paymentMethods
 ) {
     public CreateRestaurantCommand {
-        name = ValidationException.requireNonBlank(
-                name,
-                "Restaurant name cannot be empty or blank."
-        );
-        if (name.length() < 2) {
-            throw new ValidationException("restaurant name must be at least 2 characters long.");
-        }
-        ValidationException.requirePositive(
-                kitchenId,
-                "Kitchen id must be greater than zero."
-        );
+        // Isto NÃO é validação, é um valor padrão: o JSON sem "paymentMethods" chega como null e
+        // significa "nenhum além do CASH" (que o Restaurant.create acrescenta). Sem isto, o
+        // Restaurant.create rejeitaria o null e a criação sem métodos viraria erro 400.
         paymentMethods = paymentMethods == null ? Set.of() : paymentMethods;
     }
 }

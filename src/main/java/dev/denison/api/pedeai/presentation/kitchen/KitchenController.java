@@ -7,7 +7,6 @@ import dev.denison.api.pedeai.core.application.kitchen.dto.KitchenResponse;
 import dev.denison.api.pedeai.presentation.kitchen.dto.CreateKitchenRequest;
 import dev.denison.api.pedeai.presentation.kitchen.dto.UpdateKitchenRequest;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,7 +45,6 @@ public class KitchenController {
 
     @GetMapping("/{id}")
     public KitchenResponse findById(@PathVariable
-                                    @NotNull(message = "{kitchen.id.required}")
                                     @Positive(message = "{kitchen.id.positive}")
                                     Long id) {
         return queryHandler.findById(id);
@@ -59,7 +57,6 @@ public class KitchenController {
     @Transactional
     @PutMapping("/{id}")
     public KitchenResponse update(@PathVariable
-                                  @NotNull(message = "{kitchen.id.required}")
                                   @Positive(message = "{kitchen.id.positive}")
                                   Long id,
                                   @RequestBody @Valid UpdateKitchenRequest request) {
@@ -79,7 +76,6 @@ public class KitchenController {
     @Transactional
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable
-                                       @NotNull(message = "{kitchen.id.required}")
                                        @Positive(message = "{kitchen.id.positive}")
                                        Long id) {
         commandHandler.delete(new DeleteKitchenCommand(id));

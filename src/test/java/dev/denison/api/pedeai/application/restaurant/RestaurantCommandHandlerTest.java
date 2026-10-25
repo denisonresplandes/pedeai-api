@@ -233,4 +233,70 @@ class RestaurantCommandHandlerTest {
         assertEquals("The delete restaurant command cannot be null.", exception.getMessage());
         verifyNoInteractions(repository);
     }
+
+    /*
+     * Os Commands não validam mais nada (etapa 9): a entrada inválida é barrada pelo Request
+     * (mensagem amigável, na borda da API) e pelos VOs (invariantes do domínio, valem para qualquer
+     * chamador). Estes testes garantem que o VO continua protegendo e que isso acontece ANTES de
+     * qualquer acesso aos repositórios (nenhuma consulta ao banco com entrada inválida).
+     */
+    @Test
+    @DisplayName("Deve lançar DomainException (do VO) quando o nome tem menos de 2 caracteres depois do trim.")
+    void shouldRejectNameTooShortAfterTrim() {
+        CreateRestaurantCommand command = new CreateRestaurantCommand(" a ", 1L, Set.of());
+
+        assertThrows(DomainException.class, () -> commandHandler.create(command));
+
+        verifyNoInteractions(repository, kitchenQueryRepository);
+    }
+
+    @Test
+    @DisplayName("Deve lançar DomainException (do VO) antes de consultar o banco quando o kitchenId não é positivo.")
+    void shouldRejectNonPositiveKitchenIdBeforeTouchingTheDatabase() {
+        CreateRestaurantCommand command = new CreateRestaurantCommand("Ilha Verde", 0L, Set.of());
+
+        assertThrows(DomainException.class, () -> commandHandler.create(command));
+
+        verifyNoInteractions(repository, kitchenQueryRepository);
+    }
+
+    @Test
+    @DisplayName("Deve criar o restaurante só com CASH quando os métodos de pagamento não são informados (null).")
+    void shouldDefaultToCashOnlyWhenPaymentMethodsAreNotInformed() {
+        // O JSON sem "paymentMethods" chega como null; não é erro, significa "nenhum além do CASH".
+        CreateRestaurantCommand command = new CreateRestaurantCommand("Ilha Verde", 1L, null);
+        when(repository.existsByName(any(RestaurantName.class))).thenReturn(false);
+        when(kitchenQueryRepository.existsById(any(KitchenId.class))).thenReturn(true);
+        when(repository.save(any(Restaurant.class))).thenAnswer(invocation -> {
+            Restaurant toSave = invocation.getArgument(0);
+            return Restaurant.restore(new RestaurantId(1L), toSave.getName(), toSave.getKitchenId(),
+                    toSave.getPaymentMethods());
+        });
+
+        RestaurantResponse response = commandHandler.create(command);
+
+        assertEquals(Set.of(PaymentMethod.CASH), response.paymentMethods());
+    }
+
+    @Test
+    @DisplayName("Deve lançar DomainException (do VO) ao atualizar com id não positivo.")
+    void shouldRejectNonPositiveIdOnUpdate() {
+        UpdateRestaurantCommand command = new UpdateRestaurantCommand(0L, "Valid Name");
+
+        assertThrows(DomainException.class, () -> commandHandler.update(command));
+
+        verifyNoInteractions(repository);
+    }
+
+    @Test
+    @DisplayName("Deve lançar DomainException (do VO) ao excluir com id não positivo ou nulo.")
+    void shouldRejectInvalidIdOnDelete() {
+        DeleteRestaurantCommand zero = new DeleteRestaurantCommand(0L);
+        DeleteRestaurantCommand missing = new DeleteRestaurantCommand(null);
+
+        assertThrows(DomainException.class, () -> commandHandler.delete(zero));
+        assertThrows(DomainException.class, () -> commandHandler.delete(missing));
+
+        verifyNoInteractions(repository);
+    }
 }
