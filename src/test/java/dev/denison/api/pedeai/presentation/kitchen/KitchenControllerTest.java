@@ -7,12 +7,17 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.sql.SQLIntegrityConstraintViolationException;
+
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -90,5 +95,47 @@ class KitchenControllerTest {
                         .content(body))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors.name").value(SIZE_MESSAGE));
+    }
+
+    /*
+     * Rede de segurança contra corrida: duas requisições simultâneas passam pelo existsByName
+     * (ambas veem "nome livre") e a segunda estoura a constraint única do banco no INSERT.
+     * O Spring traduz isso para DataIntegrityViolationException; sem um handler, vira 500.
+     * O detalhe do SQL ("Duplicate entry ... for key ...") NÃO pode vazar para o cliente.
+     */
+    @Test
+    @DisplayName("Deve devolver 409 (e não 500) quando o banco rejeita o INSERT por chave duplicada.")
+    void shouldReturnConflictWhenDatabaseRejectsDuplicateKey() throws Exception {
+        when(commandHandler.create(any())).thenThrow(new DataIntegrityViolationException(
+                "could not execute statement",
+                new SQLIntegrityConstraintViolationException(
+                        "Duplicate entry 'Indiana' for key 'tb_kitchen.unq_kitchen_name'")));
+
+        mockMvc.perform(post("/kitchens")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name": "Indiana"}
+                                """))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.title").value("Resource Conflict"))
+                .andExpect(jsonPath("$.detail")
+                        .value("The operation could not be completed because it conflicts with existing data.")
+                );
+    }
+
+    @Test
+    @DisplayName("Deve devolver 409 (e não 500) quando o banco rejeita o DELETE por chave estrangeira.")
+    void shouldReturnConflictWhenDatabaseRejectsForeignKeyViolation() throws Exception {
+        doThrow(new DataIntegrityViolationException(
+                "could not execute statement",
+                new SQLIntegrityConstraintViolationException(
+                        "Cannot delete or update a parent row: a foreign key constraint fails")))
+                .when(commandHandler).delete(any());
+
+        mockMvc.perform(delete("/kitchens/1"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.title").value("Resource Conflict"))
+                .andExpect(jsonPath("$.detail")
+                        .value("The operation could not be completed because it conflicts with existing data."));
     }
 }
