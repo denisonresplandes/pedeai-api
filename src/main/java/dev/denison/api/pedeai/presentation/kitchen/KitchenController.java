@@ -2,7 +2,6 @@ package dev.denison.api.pedeai.presentation.kitchen;
 
 import dev.denison.api.pedeai.core.application.kitchen.KitchenCommandHandler;
 import dev.denison.api.pedeai.core.application.kitchen.KitchenQueryHandler;
-import dev.denison.api.pedeai.core.application.kitchen.dto.DeleteKitchenCommand;
 import dev.denison.api.pedeai.core.application.kitchen.dto.KitchenResponse;
 import dev.denison.api.pedeai.presentation.kitchen.dto.CreateKitchenRequest;
 import dev.denison.api.pedeai.presentation.kitchen.dto.UpdateKitchenRequest;
@@ -78,7 +77,7 @@ public class KitchenController {
     public ResponseEntity<Void> delete(@PathVariable
                                        @Positive(message = "{kitchen.id.positive}")
                                        Long id) {
-        commandHandler.delete(new DeleteKitchenCommand(id));
+        commandHandler.delete(id);
         return ResponseEntity.noContent().build();
     }
 }

@@ -1,7 +1,6 @@
 package dev.denison.api.pedeai.core.application.kitchen;
 
 import dev.denison.api.pedeai.core.application.kitchen.dto.CreateKitchenCommand;
-import dev.denison.api.pedeai.core.application.kitchen.dto.DeleteKitchenCommand;
 import dev.denison.api.pedeai.core.application.kitchen.dto.KitchenResponse;
 import dev.denison.api.pedeai.core.application.kitchen.dto.UpdateKitchenCommand;
 import dev.denison.api.pedeai.core.application.kitchen.exceptions.KitchenInUseException;
@@ -51,9 +50,13 @@ public class KitchenCommandHandler {
         return KitchenResponseMapper.toResponse(kitchenUpdated);
     }
 
-    public void delete(DeleteKitchenCommand command) {
-        validate(command, "The delete kitchen command cannot be null.");
-        Kitchen kitchenToDelete = getKitchenOrElseThrow(new KitchenId(command.id()));
+    /*
+     * Recebe o id direto, sem Command: uma exclusão só precisa do id e não carrega dados, então um
+     * DeleteKitchenCommand seria um Long embrulhado (as consultas também recebem o Long). O id é
+     * validado pelo VO KitchenId. Se a exclusão um dia ganhar dados (ex.: motivo), o Command volta.
+     */
+    public void delete(Long id) {
+        Kitchen kitchenToDelete = getKitchenOrElseThrow(new KitchenId(id));
         if (restaurantQueryRepository.existsByKitchenId(kitchenToDelete.getId())) {
             throw new KitchenInUseException(kitchenToDelete.getId().value());
         }

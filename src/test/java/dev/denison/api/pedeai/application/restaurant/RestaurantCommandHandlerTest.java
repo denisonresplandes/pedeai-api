@@ -4,7 +4,6 @@ import dev.denison.api.pedeai.core.application.kitchen.KitchenQueryRepository;
 import dev.denison.api.pedeai.core.application.kitchen.exceptions.KitchenNotFoundException;
 import dev.denison.api.pedeai.core.application.restaurant.RestaurantCommandHandler;
 import dev.denison.api.pedeai.core.application.restaurant.dto.CreateRestaurantCommand;
-import dev.denison.api.pedeai.core.application.restaurant.dto.DeleteRestaurantCommand;
 import dev.denison.api.pedeai.core.application.restaurant.dto.RestaurantResponse;
 import dev.denison.api.pedeai.core.application.restaurant.dto.UpdateRestaurantCommand;
 import dev.denison.api.pedeai.core.application.restaurant.exceptions.RestaurantNameAlreadyExistsException;
@@ -229,10 +228,9 @@ class RestaurantCommandHandlerTest {
     @Test
     @DisplayName("Deve excluir o restaurante com sucesso quando ele existir.")
     void shouldDeleteRestaurantSuccessfully() {
-        DeleteRestaurantCommand command = new DeleteRestaurantCommand(1L);
         when(repository.existsById(any(RestaurantId.class))).thenReturn(true);
 
-        commandHandler.delete(command);
+        commandHandler.delete(1L);
 
         verify(repository, times(1)).existsById(any(RestaurantId.class));
         verify(repository, times(1)).deleteById(any(RestaurantId.class));
@@ -242,21 +240,11 @@ class RestaurantCommandHandlerTest {
     @Test
     @DisplayName("Deve lançar RestaurantNotFoundException ao excluir um restaurante inexistente.")
     void shouldThrowExceptionWhenDeletingNonExistingRestaurant() {
-        DeleteRestaurantCommand command = new DeleteRestaurantCommand(99L);
         when(repository.existsById(any(RestaurantId.class))).thenReturn(false);
 
-        assertThrows(RestaurantNotFoundException.class, () -> commandHandler.delete(command));
+        assertThrows(RestaurantNotFoundException.class, () -> commandHandler.delete(99L));
 
         verify(repository, never()).deleteById(any(RestaurantId.class));
-    }
-
-    @Test
-    @DisplayName("Deve lançar ValidationException quando o comando de exclusão for nulo.")
-    void shouldThrowExceptionWhenDeleteCommandIsNull() {
-        ValidationException exception = assertThrows(ValidationException.class, () -> commandHandler.delete(null));
-
-        assertEquals("The delete restaurant command cannot be null.", exception.getMessage());
-        verifyNoInteractions(repository);
     }
 
     /*
@@ -316,11 +304,8 @@ class RestaurantCommandHandlerTest {
     @Test
     @DisplayName("Deve lançar DomainException (do VO) ao excluir com id não positivo ou nulo.")
     void shouldRejectInvalidIdOnDelete() {
-        DeleteRestaurantCommand zero = new DeleteRestaurantCommand(0L);
-        DeleteRestaurantCommand missing = new DeleteRestaurantCommand(null);
-
-        assertThrows(DomainException.class, () -> commandHandler.delete(zero));
-        assertThrows(DomainException.class, () -> commandHandler.delete(missing));
+        assertThrows(DomainException.class, () -> commandHandler.delete(0L));
+        assertThrows(DomainException.class, () -> commandHandler.delete(null));
 
         verifyNoInteractions(repository);
     }

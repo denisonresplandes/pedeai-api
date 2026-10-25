@@ -2,7 +2,6 @@ package dev.denison.api.pedeai.presentation.restaurant;
 
 import dev.denison.api.pedeai.core.application.restaurant.RestaurantCommandHandler;
 import dev.denison.api.pedeai.core.application.restaurant.RestaurantQueryHandler;
-import dev.denison.api.pedeai.core.application.restaurant.dto.DeleteRestaurantCommand;
 import dev.denison.api.pedeai.core.application.restaurant.dto.RestaurantResponse;
 import dev.denison.api.pedeai.presentation.restaurant.dto.CreateRestaurantRequest;
 import dev.denison.api.pedeai.presentation.restaurant.dto.UpdateRestaurantRequest;
@@ -67,7 +66,7 @@ public class RestaurantController {
     public ResponseEntity<Void> delete(@PathVariable
                                        @Positive(message = "{restaurant.id.positive}")
                                        Long id) {
-        commandHandler.delete(new DeleteRestaurantCommand(id));
+        commandHandler.delete(id);
         return ResponseEntity.noContent().build();
     }
 }

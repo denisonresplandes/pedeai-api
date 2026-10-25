@@ -3,7 +3,6 @@ package dev.denison.api.pedeai.core.application.restaurant;
 import dev.denison.api.pedeai.core.application.kitchen.KitchenQueryRepository;
 import dev.denison.api.pedeai.core.application.kitchen.exceptions.KitchenNotFoundException;
 import dev.denison.api.pedeai.core.application.restaurant.dto.CreateRestaurantCommand;
-import dev.denison.api.pedeai.core.application.restaurant.dto.DeleteRestaurantCommand;
 import dev.denison.api.pedeai.core.application.restaurant.dto.RestaurantResponse;
 import dev.denison.api.pedeai.core.application.restaurant.dto.UpdateRestaurantCommand;
 import dev.denison.api.pedeai.core.application.restaurant.exceptions.RestaurantNameAlreadyExistsException;
@@ -56,13 +55,13 @@ public class RestaurantCommandHandler {
         return RestaurantResponseMapper.toResponse(restaurantUpdated);
     }
 
-    public void delete(DeleteRestaurantCommand command) {
-        validate(command, "The delete restaurant command cannot be null.");
-        RestaurantId id = new RestaurantId(command.id());
-        if (!repository.existsById(id)) {
-            throw new RestaurantNotFoundException(id.value());
+    // Recebe o id direto, sem Command: veja KitchenCommandHandler.delete.
+    public void delete(Long id) {
+        RestaurantId restaurantId = new RestaurantId(id);
+        if (!repository.existsById(restaurantId)) {
+            throw new RestaurantNotFoundException(restaurantId.value());
         }
-        repository.deleteById(id);
+        repository.deleteById(restaurantId);
     }
 
     private void validate(Object o, String message) {
