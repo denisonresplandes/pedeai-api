@@ -26,6 +26,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 
@@ -172,6 +173,30 @@ class RestaurantCommandHandlerTest {
         assertEquals("ilha verde", response.name());
         verify(repository, never()).existsByName(any(RestaurantName.class));
         verify(repository, times(1)).save(existing);
+    }
+
+    @Test
+    @DisplayName("Não deve validar unicidade na mudança só de caixa mesmo com o locale padrão turco (tr-TR).")
+    void shouldSkipUniquenessCheckWhenNameDiffersOnlyByCaseUnderTurkishLocale() {
+        // Com o locale turco, "I".toLowerCase() devolve "ı" (i sem ponto): veja o teste equivalente
+        // em KitchenCommandHandlerTest. "Ilha Verde" x "ilha verde" é exatamente o par que quebrava.
+        Locale original = Locale.getDefault();
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+        try {
+            UpdateRestaurantCommand command = new UpdateRestaurantCommand(1L, "ilha verde");
+            Restaurant existing = Restaurant.restore(
+                    new RestaurantId(1L), new RestaurantName("Ilha Verde"), new KitchenId(1L),
+                    Set.of(PaymentMethod.CASH));
+            when(repository.findById(any(RestaurantId.class))).thenReturn(Optional.of(existing));
+            when(repository.save(any(Restaurant.class))).thenReturn(existing);
+
+            RestaurantResponse response = commandHandler.update(command);
+
+            assertEquals("ilha verde", response.name());
+            verify(repository, never()).existsByName(any(RestaurantName.class));
+        } finally {
+            Locale.setDefault(original);
+        }
     }
 
     @Test

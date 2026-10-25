@@ -29,4 +29,13 @@ public record RestaurantName(
             );
         }
     }
+
+    /*
+     * Dois nomes que diferem só pela caixa são o MESMO nome para a regra de unicidade
+     * ("Ilha Verde" == "ilha verde"), o mesmo critério do banco (existsByNameIgnoreCase).
+     * Independe do locale padrão da JVM: veja KitchenName.equalsIgnoreCase.
+     */
+    public boolean equalsIgnoreCase(RestaurantName other) {
+        return other != null && value.equalsIgnoreCase(other.value);
+    }
 }

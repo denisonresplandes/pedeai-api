@@ -5,8 +5,12 @@ import dev.denison.api.pedeai.core.domain.shared.DomainException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.Locale;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /*
  * Teste de domínio puro: sem Spring, sem Mockito, sem banco.
@@ -68,5 +72,36 @@ class KitchenNameTest {
     void shouldRejectNullOrBlankName() {
         assertThrows(DomainException.class, () -> new KitchenName(null));
         assertThrows(DomainException.class, () -> new KitchenName("   "));
+    }
+
+    @Test
+    @DisplayName("Deve considerar iguais dois nomes que diferem só pela caixa (e pelos espaços nas pontas).")
+    void shouldBeEqualIgnoringCase() {
+        assertTrue(new KitchenName("Indiana").equalsIgnoreCase(new KitchenName("indiana")));
+        assertTrue(new KitchenName("  Indiana  ").equalsIgnoreCase(new KitchenName("indiana")));
+    }
+
+    @Test
+    @DisplayName("Não deve considerar iguais dois nomes diferentes, nem comparar com null.")
+    void shouldNotBeEqualWhenNamesDiffer() {
+        assertFalse(new KitchenName("Indiana").equalsIgnoreCase(new KitchenName("Tailandesa")));
+        assertFalse(new KitchenName("Indiana").equalsIgnoreCase(null));
+    }
+
+    /*
+     * A comparação não pode depender do idioma da máquina. Com o locale turco, "I".toLowerCase()
+     * devolve "ı" (i sem ponto), então uma implementação com toLowerCase() sem Locale trataria
+     * "Indiana" e "indiana" como nomes diferentes. equalsIgnoreCase não tem esse problema.
+     */
+    @Test
+    @DisplayName("Deve ignorar a caixa de forma independente do locale padrão (tr-TR).")
+    void shouldIgnoreCaseRegardlessOfDefaultLocale() {
+        Locale original = Locale.getDefault();
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+        try {
+            assertTrue(new KitchenName("Indiana").equalsIgnoreCase(new KitchenName("indiana")));
+        } finally {
+            Locale.setDefault(original);
+        }
     }
 }

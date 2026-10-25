@@ -14,8 +14,6 @@ import dev.denison.api.pedeai.core.domain.kitchen.vo.KitchenId;
 import dev.denison.api.pedeai.core.domain.kitchen.vo.KitchenName;
 import dev.denison.api.pedeai.core.domain.restaurant.RestaurantQueryRepository;
 
-import java.util.Objects;
-
 public class KitchenCommandHandler {
 
     private final KitchenRepository repository;
@@ -41,7 +39,7 @@ public class KitchenCommandHandler {
         KitchenName newName = new KitchenName(command.name());
         Kitchen kitchen = getKitchenOrElseThrow(new KitchenId(command.id()));
 
-        if (!isEquals(kitchen.getName(), newName)) {
+        if (!kitchen.getName().equalsIgnoreCase(newName)) {
             ensureNameIsUnique(newName);
         }
         /*
@@ -80,11 +78,5 @@ public class KitchenCommandHandler {
         return repository.findById(id).orElseThrow(() ->
                 new KitchenNotFoundException(id.value())
         );
-    }
-
-    private boolean isEquals(KitchenName currentName, KitchenName newName) {
-        String current = currentName.value().toLowerCase();
-        String _new = newName.value().toLowerCase();
-        return Objects.equals(current, _new);
     }
 }

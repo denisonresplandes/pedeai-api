@@ -15,8 +15,6 @@ import dev.denison.api.pedeai.core.domain.restaurant.RestaurantRepository;
 import dev.denison.api.pedeai.core.domain.restaurant.vo.RestaurantId;
 import dev.denison.api.pedeai.core.domain.restaurant.vo.RestaurantName;
 
-import java.util.Objects;
-
 public class RestaurantCommandHandler {
 
     private final RestaurantRepository repository;
@@ -50,7 +48,7 @@ public class RestaurantCommandHandler {
         RestaurantName newName = new RestaurantName(command.name());
         Restaurant restaurant = getRestaurantOrElseThrow(new RestaurantId(command.id()));
 
-        if (!isEquals(restaurant.getName(), newName)) {
+        if (!restaurant.getName().equalsIgnoreCase(newName)) {
             ensureNameIsUnique(newName);
         }
         restaurant.changeName(newName);
@@ -65,12 +63,6 @@ public class RestaurantCommandHandler {
             throw new RestaurantNotFoundException(id.value());
         }
         repository.deleteById(id);
-    }
-
-    private boolean isEquals(RestaurantName currentName, RestaurantName newName) {
-        String current = currentName.value().toLowerCase();
-        String _new = newName.value().toLowerCase();
-        return Objects.equals(current, _new);
     }
 
     private void validate(Object o, String message) {

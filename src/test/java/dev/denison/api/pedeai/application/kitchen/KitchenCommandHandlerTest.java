@@ -22,6 +22,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Locale;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -183,6 +184,46 @@ class KitchenCommandHandlerTest {
         // ASSERT
         verify(repository, times(1)).findById(any(KitchenId.class));
         verify(repository, never()).delete(any(Kitchen.class));
+    }
+
+    @Test
+    @DisplayName("Não deve validar unicidade quando o novo nome diferir do atual apenas pela caixa.")
+    void shouldSkipUniquenessCheckWhenNameDiffersOnlyByCase() {
+        UpdateKitchenCommand command = new UpdateKitchenCommand(1L, "indiana");
+        Kitchen existing = Kitchen.restore(new KitchenId(1L), new KitchenName("Indiana"));
+        when(repository.findById(any(KitchenId.class))).thenReturn(Optional.of(existing));
+        when(repository.save(any(Kitchen.class))).thenReturn(existing);
+
+        KitchenResponse response = commandHandler.update(command);
+
+        assertEquals("indiana", response.name());
+        verify(repository, never()).existsByName(any(KitchenName.class));
+    }
+
+    /*
+     * Comparar nomes "sem diferenciar a caixa" não pode depender do idioma da máquina. Com o locale
+     * turco, "I".toLowerCase() devolve "ı" (i sem ponto), então "Indiana" e "indiana" deixavam de
+     * ser considerados o mesmo nome: renomear a cozinha só trocando a caixa virava um falso 409
+     * ("já existe"), porque a checagem de unicidade encontrava a própria cozinha.
+     */
+    @Test
+    @DisplayName("Não deve validar unicidade na mudança só de caixa mesmo com o locale padrão turco (tr-TR).")
+    void shouldSkipUniquenessCheckWhenNameDiffersOnlyByCaseUnderTurkishLocale() {
+        Locale original = Locale.getDefault();
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+        try {
+            UpdateKitchenCommand command = new UpdateKitchenCommand(1L, "indiana");
+            Kitchen existing = Kitchen.restore(new KitchenId(1L), new KitchenName("Indiana"));
+            when(repository.findById(any(KitchenId.class))).thenReturn(Optional.of(existing));
+            when(repository.save(any(Kitchen.class))).thenReturn(existing);
+
+            KitchenResponse response = commandHandler.update(command);
+
+            assertEquals("indiana", response.name());
+            verify(repository, never()).existsByName(any(KitchenName.class));
+        } finally {
+            Locale.setDefault(original);
+        }
     }
 
     /*

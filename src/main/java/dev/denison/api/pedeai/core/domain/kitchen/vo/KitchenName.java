@@ -31,4 +31,15 @@ public record KitchenName(
             );
         }
     }
+
+    /*
+     * Dois nomes que diferem só pela caixa são o MESMO nome para a regra de unicidade
+     * ("Indiana" == "indiana"), o mesmo critério do banco (existsByNameIgnoreCase). O equals() do
+     * record continua sendo o case-sensitive padrão.
+     *
+     * String.equalsIgnoreCase não depende do locale padrão da JVM.
+     */
+    public boolean equalsIgnoreCase(KitchenName other) {
+        return other != null && value.equalsIgnoreCase(other.value);
+    }
 }
