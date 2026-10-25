@@ -37,6 +37,6 @@ public class KitchenRepositoryAdapter implements KitchenRepository {
 
     @Override
     public boolean existsByName(KitchenName name) {
-        return repository.existsByName(name.value());
+        return repository.existsByNameIgnoreCase(name.value());
     }
 }
