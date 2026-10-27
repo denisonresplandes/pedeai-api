@@ -18,9 +18,15 @@ public class KitchenQueryHandler {
                 .orElseThrow(() -> new KitchenNotFoundException(id));
     }
     
-    public KitchenResponse findByName(String name) {
+    /*
+     * Filtro por nome: devolve sempre uma LISTA, como o findAll. Não achar nenhum resultado não é
+     * erro (lista vazia); o 404 fica para um recurso específico (findById). O nome é único, então a
+     * lista tem 0 ou 1 elemento, e a porta continua devolvendo Optional.
+     */
+    public List<KitchenResponse> findByName(String name) {
         return queryRepository.findByName(name)
-                .orElseThrow(() -> new KitchenNotFoundException(name));
+                .map(List::of)
+                .orElseGet(List::of);
     }
     
     public List<KitchenResponse> findAll() {

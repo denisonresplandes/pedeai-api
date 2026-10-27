@@ -18,9 +18,11 @@ public class RestaurantQueryHandler {
                 .orElseThrow(() -> new RestaurantNotFoundException(id));
     }
 
-    public RestaurantResponse findByName(String name) {
+    // Devolve lista (0 ou 1 elemento): veja KitchenQueryHandler.findByName.
+    public List<RestaurantResponse> findByName(String name) {
         return queryRepository.findByName(name)
-                .orElseThrow(() -> new RestaurantNotFoundException(name));
+                .map(List::of)
+                .orElseGet(List::of);
     }
 
     public List<RestaurantResponse> findAll() {

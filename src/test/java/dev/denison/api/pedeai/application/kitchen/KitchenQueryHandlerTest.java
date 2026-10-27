@@ -55,22 +55,22 @@ public class KitchenQueryHandlerTest {
     }
 
     @Test
-    @DisplayName("Deve retornar KitchenResponse quando a cozinha existir por nome.")
-    void shouldReturnKitchenResponseWhenKitchenExistsByName() {
+    @DisplayName("Deve retornar uma lista com a cozinha quando ela existir por nome.")
+    void shouldReturnListWithTheKitchenWhenItExistsByName() {
         when(queryRepository.findByName("indiana")).thenReturn(Optional.of(new KitchenResponse(1L, "Indiana")));
 
-        KitchenResponse response = queryHandler.findByName("indiana");
+        List<KitchenResponse> response = queryHandler.findByName("indiana");
 
-        assertEquals("Indiana", response.name());
+        assertEquals(List.of(new KitchenResponse(1L, "Indiana")), response);
         verify(queryRepository, times(1)).findByName("indiana");
     }
 
     @Test
-    @DisplayName("Deve lançar KitchenNotFoundException quando a cozinha não existir por nome.")
-    void shouldThrowExceptionWhenKitchenDoesNotExistByName() {
+    @DisplayName("Deve retornar lista vazia, sem lançar exceção, quando a cozinha não existir por nome.")
+    void shouldReturnEmptyListWhenKitchenDoesNotExistByName() {
         when(queryRepository.findByName("Unknown")).thenReturn(Optional.empty());
 
-        assertThrows(KitchenNotFoundException.class, () -> queryHandler.findByName("Unknown"));
+        assertEquals(List.of(), queryHandler.findByName("Unknown"));
     }
 
     @Test

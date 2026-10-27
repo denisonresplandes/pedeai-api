@@ -12,8 +12,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
 import java.sql.SQLIntegrityConstraintViolationException;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
@@ -137,5 +142,45 @@ class KitchenControllerTest {
                 .andExpect(jsonPath("$.title").value("Resource Conflict"))
                 .andExpect(jsonPath("$.detail")
                         .value("The operation could not be completed because it conflicts with existing data."));
+    }
+
+    /*
+     * Filtro por nome: a resposta tem sempre o formato do GET sem filtro (uma lista). Não achar nada
+     * não é erro: filtrar uma coleção sem resultado é 200 com lista vazia; 404 é para um recurso
+     * específico (GET /kitchens/{id}). Os nomes são únicos, então a lista tem 0 ou 1 elemento.
+     */
+    @Test
+    @DisplayName("GET /kitchens?name=: devolve 200 com uma lista com a cozinha encontrada.")
+    void shouldReturnListWithTheKitchenWhenFilteringByName() throws Exception {
+        when(queryHandler.findByName("indiana")).thenReturn(List.of(new KitchenResponse(1L, "Indiana")));
+
+        mockMvc.perform(get("/kitchens").param("name", "indiana"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].name").value("Indiana"));
+    }
+
+    @Test
+    @DisplayName("GET /kitchens?name=: devolve 200 com lista vazia (e não 404) quando nenhuma cozinha tem o nome.")
+    void shouldReturnEmptyListWhenNoKitchenHasTheName() throws Exception {
+        when(queryHandler.findByName("nope")).thenReturn(List.of());
+
+        mockMvc.perform(get("/kitchens").param("name", "nope"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    @DisplayName("GET /kitchens sem filtro: lista tudo e não consulta por nome.")
+    void shouldListAllWhenThereIsNoNameFilter() throws Exception {
+        when(queryHandler.findAll()).thenReturn(
+                List.of(new KitchenResponse(1L, "Indiana"), new KitchenResponse(2L, "Tailandesa")));
+
+        mockMvc.perform(get("/kitchens"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)));
+
+        verify(queryHandler, never()).findByName(any());
     }
 }

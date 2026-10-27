@@ -54,23 +54,23 @@ class RestaurantQueryHandlerTest {
     }
 
     @Test
-    @DisplayName("Deve retornar RestaurantResponse quando o restaurante existir por nome.")
-    void shouldReturnRestaurantResponseWhenRestaurantExistsByName() {
+    @DisplayName("Deve retornar uma lista com o restaurante quando ele existir por nome.")
+    void shouldReturnListWithTheRestaurantWhenItExistsByName() {
         RestaurantResponse stored = new RestaurantResponse(1L, "Ilha Verde", 2L, Set.of(PaymentMethod.CASH));
         when(queryRepository.findByName("ilha verde")).thenReturn(Optional.of(stored));
 
-        RestaurantResponse response = queryHandler.findByName("ilha verde");
+        List<RestaurantResponse> response = queryHandler.findByName("ilha verde");
 
-        assertEquals("Ilha Verde", response.name());
+        assertEquals(List.of(stored), response);
         verify(queryRepository, times(1)).findByName("ilha verde");
     }
 
     @Test
-    @DisplayName("Deve lançar RestaurantNotFoundException quando o restaurante não existir por nome.")
-    void shouldThrowExceptionWhenRestaurantDoesNotExistByName() {
+    @DisplayName("Deve retornar lista vazia, sem lançar exceção, quando o restaurante não existir por nome.")
+    void shouldReturnEmptyListWhenRestaurantDoesNotExistByName() {
         when(queryRepository.findByName("Unknown")).thenReturn(Optional.empty());
 
-        assertThrows(RestaurantNotFoundException.class, () -> queryHandler.findByName("Unknown"));
+        assertEquals(List.of(), queryHandler.findByName("Unknown"));
     }
 
     @Test

@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.hasItems;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -54,11 +55,17 @@ class ApiSmokeTest {
                 .andExpect(jsonPath("$.id").value(id))
                 .andExpect(jsonPath("$.name").value(name));
 
-        // Por nome, sem diferenciar a caixa.
+        // Por nome, sem diferenciar a caixa. O filtro devolve sempre uma lista.
         mockMvc.perform(get("/kitchens").param("name", name.toUpperCase()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(id))
-                .andExpect(jsonPath("$.name").value(name));
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id").value(id))
+                .andExpect(jsonPath("$[0].name").value(name));
+
+        // Nome que não existe: 200 com lista vazia (404 é só para um recurso específico, como /kitchens/{id}).
+        mockMvc.perform(get("/kitchens").param("name", uniqueName("Nope")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
 
         mockMvc.perform(get("/kitchens"))
                 .andExpect(status().isOk())
@@ -111,7 +118,11 @@ class ApiSmokeTest {
 
         mockMvc.perform(get("/restaurants").param("name", name.toUpperCase()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(id));
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id").value(id));
+        mockMvc.perform(get("/restaurants").param("name", uniqueName("Nope")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
 
         mockMvc.perform(get("/restaurants"))
                 .andExpect(status().isOk())

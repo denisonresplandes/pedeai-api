@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Objects;
 
 @RestController
@@ -30,11 +31,11 @@ public class RestaurantController {
     }
 
     @GetMapping
-    public ResponseEntity<?> find(@RequestParam(value = "name", required = false) String name) {
+    public List<RestaurantResponse> find(@RequestParam(value = "name", required = false) String name) {
         if (Objects.nonNull(name)) {
-            return ResponseEntity.ok(queryHandler.findByName(name));
+            return queryHandler.findByName(name);
         }
-        return ResponseEntity.ok(queryHandler.findAll());
+        return queryHandler.findAll();
     }
 
     @GetMapping("/{id}")

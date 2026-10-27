@@ -7,8 +7,4 @@ public class RestaurantNotFoundException extends ResourceNotFoundException {
     public RestaurantNotFoundException(Long id) {
         super("Restaurant with id %d not found.".formatted(id));
     }
-
-    public RestaurantNotFoundException(String name) {
-        super("Restaurant with name %s not found.".formatted(name));
-    }
 }

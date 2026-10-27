@@ -10,6 +10,16 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import dev.denison.api.pedeai.core.application.restaurant.dto.RestaurantResponse;
+import dev.denison.api.pedeai.core.domain.payment.PaymentMethod;
+import java.util.Set;
+import java.util.List;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
+import static org.mockito.ArgumentMatchers.any;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -96,5 +106,43 @@ class RestaurantControllerTest {
                         .content(body))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors.kitchenId").value("The kitchen id must be a positive number"));
+    }
+
+    // Filtro por nome devolve sempre uma lista (0 ou 1 elemento): veja KitchenControllerTest.
+    @Test
+    @DisplayName("GET /restaurants?name=: devolve 200 com uma lista com o restaurante encontrado.")
+    void shouldReturnListWithTheRestaurantWhenFilteringByName() throws Exception {
+        when(queryHandler.findByName("ilha verde")).thenReturn(
+                List.of(new RestaurantResponse(1L, "Ilha Verde", 2L, Set.of(PaymentMethod.CASH))));
+
+        mockMvc.perform(get("/restaurants").param("name", "ilha verde"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].name").value("Ilha Verde"))
+                .andExpect(jsonPath("$[0].kitchenId").value(2));
+    }
+
+    @Test
+    @DisplayName("GET /restaurants?name=: devolve 200 com lista vazia (e não 404) quando nenhum restaurante tem o nome.")
+    void shouldReturnEmptyListWhenNoRestaurantHasTheName() throws Exception {
+        when(queryHandler.findByName("nope")).thenReturn(List.of());
+
+        mockMvc.perform(get("/restaurants").param("name", "nope"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    @DisplayName("GET /restaurants sem filtro: lista tudo e não consulta por nome.")
+    void shouldListAllWhenThereIsNoNameFilter() throws Exception {
+        when(queryHandler.findAll()).thenReturn(List.of(
+                new RestaurantResponse(1L, "Restaurant One", 1L, Set.of(PaymentMethod.CASH)),
+                new RestaurantResponse(2L, "Restaurant Two", 2L, Set.of(PaymentMethod.CASH))));
+
+        mockMvc.perform(get("/restaurants"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)));
+
+        verify(queryHandler, never()).findByName(any());
     }
 }
