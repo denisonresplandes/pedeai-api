@@ -1,6 +1,6 @@
 package dev.denison.api.pedeai.application.kitchen;
 
-import dev.denison.api.pedeai.core.application.kitchen.KitchenCommandHandler;
+import dev.denison.api.pedeai.core.application.kitchen.DefaultKitchenCommandHandler;
 import dev.denison.api.pedeai.core.application.kitchen.dto.CreateKitchenCommand;
 import dev.denison.api.pedeai.core.application.kitchen.dto.KitchenResponse;
 import dev.denison.api.pedeai.core.application.kitchen.dto.UpdateKitchenCommand;
@@ -29,7 +29,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class KitchenCommandHandlerTest {
+class DefaultKitchenCommandHandlerTest {
 
     @Mock
     private KitchenRepository repository;
@@ -38,7 +38,7 @@ class KitchenCommandHandlerTest {
     private RestaurantQueryRepository restaurantQueryRepository;
 
     @InjectMocks
-    private KitchenCommandHandler commandHandler;
+    private DefaultKitchenCommandHandler commandHandler;
 
     @Test
     @DisplayName("Deve criar uma cozinha com sucesso quando o nome for único.")

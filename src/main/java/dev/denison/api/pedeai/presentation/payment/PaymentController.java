@@ -5,7 +5,6 @@ import dev.denison.api.pedeai.presentation.payment.dto.ProcessPaymentRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,7 +22,6 @@ public class PaymentController {
 
     // chamado pelo app (front-end)
     @PostMapping
-    @Transactional
     public ResponseEntity<Void> pay(@RequestBody @Valid ProcessPaymentRequest request) {
         commandHandler.processPayment(request.toCommand());
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();

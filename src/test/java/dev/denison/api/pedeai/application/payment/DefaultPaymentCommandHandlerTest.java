@@ -1,6 +1,6 @@
 package dev.denison.api.pedeai.application.payment;
 
-import dev.denison.api.pedeai.core.application.payment.PaymentCommandHandler;
+import dev.denison.api.pedeai.core.application.payment.DefaultPaymentCommandHandler;
 import dev.denison.api.pedeai.core.application.payment.dto.ConfirmPaymentCommand;
 import dev.denison.api.pedeai.core.application.payment.dto.ProcessPaymentCommand;
 import dev.denison.api.pedeai.core.application.payment.exceptions.PaymentNotFoundException;
@@ -42,7 +42,7 @@ import static org.mockito.Mockito.when;
  * algo que o Mockito não sabe preencher com mocks.
  */
 @ExtendWith(MockitoExtension.class)
-class PaymentCommandHandlerTest {
+class DefaultPaymentCommandHandlerTest {
 
     @Mock
     private PaymentRepository paymentRepository;
@@ -51,7 +51,7 @@ class PaymentCommandHandlerTest {
     @DisplayName("Deve lançar uma ValidationException (400) quando nenhuma estratégia suporta o método.")
     void shouldThrowValidationExceptionWhenMethodIsNotSupported() {
         // Arrange: nenhuma estratégia registrada -> nenhum método é suportado
-        PaymentCommandHandler handler = new PaymentCommandHandler(paymentRepository, List.of());
+        DefaultPaymentCommandHandler handler = new DefaultPaymentCommandHandler(paymentRepository, List.of());
         Payment saved = Payment.restore(
                 new PaymentId(1L), PaymentStatus.PENDING, PaymentMethod.PIX, new Money(BigDecimal.TEN));
         when(paymentRepository.save(any(Payment.class))).thenReturn(saved);
@@ -70,7 +70,7 @@ class PaymentCommandHandlerTest {
     @Test
     @DisplayName("Deve lançar uma ResourceNotFoundException (404) quando o pagamento do webhook não existe.")
     void shouldThrowResourceNotFoundExceptionWhenPaymentDoesNotExist() {
-        PaymentCommandHandler handler = new PaymentCommandHandler(paymentRepository, List.of());
+        DefaultPaymentCommandHandler handler = new DefaultPaymentCommandHandler(paymentRepository, List.of());
         when(paymentRepository.findById(any(PaymentId.class))).thenReturn(Optional.empty());
 
         PaymentNotFoundException ex = assertThrows(
@@ -88,7 +88,7 @@ class PaymentCommandHandlerTest {
     @Test
     @DisplayName("Deve lançar DomainException (do Payment) sem salvar nada quando o método é nulo.")
     void shouldRejectNullMethodBeforeSaving() {
-        PaymentCommandHandler handler = new PaymentCommandHandler(paymentRepository, List.of());
+        DefaultPaymentCommandHandler handler = new DefaultPaymentCommandHandler(paymentRepository, List.of());
         ProcessPaymentCommand command = new ProcessPaymentCommand(new Money(BigDecimal.TEN), null);
 
         assertThrows(DomainException.class, () -> handler.processPayment(command));
@@ -99,7 +99,7 @@ class PaymentCommandHandlerTest {
     @Test
     @DisplayName("Deve lançar DomainException (do Payment) sem salvar nada quando o valor é nulo.")
     void shouldRejectNullAmountBeforeSaving() {
-        PaymentCommandHandler handler = new PaymentCommandHandler(paymentRepository, List.of());
+        DefaultPaymentCommandHandler handler = new DefaultPaymentCommandHandler(paymentRepository, List.of());
         ProcessPaymentCommand command = new ProcessPaymentCommand(null, PaymentMethod.CASH);
 
         assertThrows(DomainException.class, () -> handler.processPayment(command));
@@ -110,7 +110,7 @@ class PaymentCommandHandlerTest {
     @Test
     @DisplayName("Deve lançar DomainException (do PaymentId) sem consultar o banco quando o id não é positivo.")
     void shouldRejectNonPositivePaymentIdBeforeQuerying() {
-        PaymentCommandHandler handler = new PaymentCommandHandler(paymentRepository, List.of());
+        DefaultPaymentCommandHandler handler = new DefaultPaymentCommandHandler(paymentRepository, List.of());
         ConfirmPaymentCommand command = new ConfirmPaymentCommand(0L, true);
 
         assertThrows(DomainException.class, () -> handler.confirmPaymentFromWebhook(command));

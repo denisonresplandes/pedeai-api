@@ -8,7 +8,6 @@ import dev.denison.api.pedeai.presentation.kitchen.dto.UpdateKitchenRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -50,11 +49,10 @@ public class KitchenController {
         return queryHandler.findById(id);
     }
 
-    /**
-     * Deixa a transação aberta (até o fim do método_) para que o Hibernate
-     * mantenha o cache de primeiro nível ativo e execute o UPDATE sem SELECTs extras.
+    /*
+     * A transação (que mantém a cache de 1º nível e evita SELECTs extras) não é mais daqui: ela é aberta
+     * pelo TransactionalKitchenCommandHandlerDecorator, em volta do caso de uso.
      */
-    @Transactional
     @PutMapping("/{id}")
     public KitchenResponse update(@PathVariable
                                   @Positive(message = "{kitchen.id.positive}")
@@ -73,7 +71,6 @@ public class KitchenController {
         return ResponseEntity.created(uri).body(response);
     }
 
-    @Transactional
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable
                                        @Positive(message = "{kitchen.id.positive}")

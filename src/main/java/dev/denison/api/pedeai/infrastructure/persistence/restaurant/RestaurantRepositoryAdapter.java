@@ -6,6 +6,7 @@ import dev.denison.api.pedeai.core.domain.restaurant.RestaurantRepository;
 import dev.denison.api.pedeai.core.domain.restaurant.vo.RestaurantId;
 import dev.denison.api.pedeai.core.domain.restaurant.vo.RestaurantName;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
@@ -20,8 +21,18 @@ public class RestaurantRepositoryAdapter implements RestaurantRepository {
         this.repository = repository;
     }
 
+    /*
+     * MANDATORY: este método NÃO abre transação, ele EXIGE que o chamador já tenha aberto uma (quem abre
+     * é o TransactionalRestaurantCommandHandlerDecorator). Sem transação, falha na hora com
+     * IllegalTransactionStateException.
+     *
+     * Por que exigir? O update abaixo depende do dirty checking: a entidade carregada precisa continuar
+     * "gerenciada" até o COMMIT, que é quando o Hibernate descobre o que mudou e gera o UPDATE. Fora de
+     * uma transação o findById devolve a entidade já solta, a alteração seria feita nela e nunca chegaria
+     * ao banco, sem erro nenhum. Melhor falhar alto do que perder o dado em silêncio.
+     */
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.MANDATORY)
     public Restaurant save(Restaurant restaurant) {
         if (Objects.isNull(restaurant.getId())) {
             RestaurantEntity savedEntity = repository.save(RestaurantMapper.toEntity(restaurant));
@@ -36,7 +47,6 @@ public class RestaurantRepositoryAdapter implements RestaurantRepository {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Optional<Restaurant> findById(RestaurantId id) {
         return repository.findById(id.value()).map(RestaurantMapper::toDomain);
     }

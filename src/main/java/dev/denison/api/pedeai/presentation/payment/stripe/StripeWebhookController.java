@@ -4,7 +4,6 @@ import dev.denison.api.pedeai.core.application.payment.PaymentCommandHandler;
 import dev.denison.api.pedeai.core.application.payment.dto.ConfirmPaymentCommand;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,7 +21,6 @@ public class StripeWebhookController {
 
     // chamado pelos servidores do Stripe
     @PostMapping
-    @Transactional
     public ResponseEntity<Void> handleStripeCallback(@RequestBody @Valid StripeWebhookPayload payload) {
         /*
         * Sem o @Valid, as anotações do StripeWebhookPayload (@NotNull, @Positive) são apenas

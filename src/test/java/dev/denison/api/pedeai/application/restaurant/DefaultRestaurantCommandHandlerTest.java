@@ -2,7 +2,7 @@ package dev.denison.api.pedeai.application.restaurant;
 
 import dev.denison.api.pedeai.core.application.kitchen.KitchenQueryRepository;
 import dev.denison.api.pedeai.core.application.kitchen.exceptions.KitchenNotFoundException;
-import dev.denison.api.pedeai.core.application.restaurant.RestaurantCommandHandler;
+import dev.denison.api.pedeai.core.application.restaurant.DefaultRestaurantCommandHandler;
 import dev.denison.api.pedeai.core.application.restaurant.dto.CreateRestaurantCommand;
 import dev.denison.api.pedeai.core.application.restaurant.dto.RestaurantResponse;
 import dev.denison.api.pedeai.core.application.restaurant.dto.UpdateRestaurantCommand;
@@ -34,7 +34,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class RestaurantCommandHandlerTest {
+class DefaultRestaurantCommandHandlerTest {
 
     @Mock
     private RestaurantRepository repository;
@@ -43,7 +43,7 @@ class RestaurantCommandHandlerTest {
     private KitchenQueryRepository kitchenQueryRepository;
 
     @InjectMocks
-    private RestaurantCommandHandler commandHandler;
+    private DefaultRestaurantCommandHandler commandHandler;
 
     @Test
     @DisplayName("Deve criar um restaurante com sucesso quando o nome for único e a cozinha existir.")
@@ -182,7 +182,7 @@ class RestaurantCommandHandlerTest {
     @DisplayName("Não deve validar unicidade na mudança só de caixa mesmo com o locale padrão turco (tr-TR).")
     void shouldSkipUniquenessCheckWhenNameDiffersOnlyByCaseUnderTurkishLocale() {
         // Com o locale turco, "I".toLowerCase() devolve "ı" (i sem ponto): veja o teste equivalente
-        // em KitchenCommandHandlerTest. "Ilha Verde" x "ilha verde" é exatamente o par que quebrava.
+        // em DefaultKitchenCommandHandlerTest. "Ilha Verde" x "ilha verde" é exatamente o par que quebrava.
         Locale original = Locale.getDefault();
         Locale.setDefault(Locale.forLanguageTag("tr-TR"));
         try {
