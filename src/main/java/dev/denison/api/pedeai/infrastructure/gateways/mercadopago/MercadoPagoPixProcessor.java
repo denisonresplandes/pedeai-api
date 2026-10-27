@@ -18,7 +18,7 @@ public class MercadoPagoPixProcessor implements PaymentProcessorStrategy {
     @Override
     public void process(Payment payment) {
         System.out.println("Gerando QR Code PIX no MERCADO PAGO para o pagamento ID: " +
-                payment.getPaymentId().value());
+                payment.getId().value());
         // código real que chama a API do Mercado Pago para gerar o copia-e-cola.
     }
 }

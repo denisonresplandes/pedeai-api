@@ -21,7 +21,9 @@ public class RestaurantEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = RestaurantName.MAX_LENGTH)
+    // A unicidade está só no @UniqueConstraint da classe (dá nome à constraint); "unique = true"
+    // aqui geraria a mesma constraint, então seria repetição.
+    @Column(nullable = false, length = RestaurantName.MAX_LENGTH)
     private String name;
 
     @ManyToOne

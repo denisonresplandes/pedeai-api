@@ -73,9 +73,12 @@ class KitchenCommandHandlerTest {
         when(repository.existsByName(any(KitchenName.class))).thenReturn(true);
 
         // Act & Assert
-        assertThrows(KitchenNameAlreadyExistsException.class, () -> {
+        KitchenNameAlreadyExistsException exception = assertThrows(KitchenNameAlreadyExistsException.class, () -> {
             commandHandler.create(command);
         });
+
+        // A mensagem vai direto para o cliente (409): precisa dizer o que é o nome e que ele já existe.
+        assertEquals("A kitchen named 'Japanese Food' already exists.", exception.getMessage());
 
         // Garante que o fluxo barrou na validação e NUNCA tentou salvar no banco
         verify(repository, times(1))

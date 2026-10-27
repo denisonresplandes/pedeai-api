@@ -7,18 +7,18 @@ import dev.denison.api.pedeai.core.domain.shared.DomainException;
 
 public class Payment extends AggregateRoot {
 
-    private final PaymentId paymentId;
+    private final PaymentId id;
     private final PaymentMethod method; // PIX, CREDIT, etc
     private final Money amount;
     private PaymentStatus status; // PENDING, PAID, etc
     // orderId
 
-    private Payment(PaymentId paymentId, PaymentStatus status, PaymentMethod method, Money amount) {
+    private Payment(PaymentId id, PaymentStatus status, PaymentMethod method, Money amount) {
         DomainException.requireNonNull(status, "Payment status cannot be null");
         DomainException.requireNonNull(method, "Payment method cannot be null");
         DomainException.requireNonNull(amount, "Payment amount cannot be null");
 
-        this.paymentId = paymentId;
+        this.id = id;
         this.status = status;
         this.method = method;
         this.amount = amount;
@@ -34,14 +34,14 @@ public class Payment extends AggregateRoot {
     }
 
     // usado apenas pelo Mapper da infraestrutura.
-    public static Payment restore(PaymentId paymentId, PaymentStatus status,
+    public static Payment restore(PaymentId id, PaymentStatus status,
                                   PaymentMethod method, Money amount) {
         DomainException.requireNonNull(
-                paymentId,
+                id,
                 "Payment ID cannot be null"
         );
         return new Payment(
-                paymentId,
+                id,
                 status,
                 method,
                 amount
@@ -68,8 +68,8 @@ public class Payment extends AggregateRoot {
         this.status = PaymentStatus.FAILED;
     }
 
-    public PaymentId getPaymentId() {
-        return paymentId;
+    public PaymentId getId() {
+        return id;
     }
 
     public PaymentStatus getStatus() {
@@ -92,7 +92,7 @@ public class Payment extends AggregateRoot {
         if (!(o instanceof Payment payment)) {
             return false;
         }
-        return paymentId != null && paymentId.equals(payment.paymentId);
+        return id != null && id.equals(payment.id);
     }
 
     @Override

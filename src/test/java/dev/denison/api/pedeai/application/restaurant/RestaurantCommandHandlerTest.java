@@ -109,7 +109,11 @@ class RestaurantCommandHandlerTest {
         CreateRestaurantCommand command = new CreateRestaurantCommand("Ilha Verde", 1L, Set.of());
         when(repository.existsByName(any(RestaurantName.class))).thenReturn(true);
 
-        assertThrows(RestaurantNameAlreadyExistsException.class, () -> commandHandler.create(command));
+        RestaurantNameAlreadyExistsException exception =
+                assertThrows(RestaurantNameAlreadyExistsException.class, () -> commandHandler.create(command));
+
+        // A mensagem vai direto para o cliente (409): precisa dizer o que é o nome e que ele já existe.
+        assertEquals("A restaurant named 'Ilha Verde' already exists.", exception.getMessage());
 
         verifyNoInteractions(kitchenQueryRepository);
         verify(repository, never()).save(any(Restaurant.class));

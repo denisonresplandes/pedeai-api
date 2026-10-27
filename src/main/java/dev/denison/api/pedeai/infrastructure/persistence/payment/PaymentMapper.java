@@ -20,8 +20,8 @@ public final class PaymentMapper {
     }
 
     public static PaymentEntity toEntity(Payment payment) {
-        Long id = Objects.nonNull(payment.getPaymentId()) ?
-                payment.getPaymentId().value() : null;
+        Long id = Objects.nonNull(payment.getId()) ?
+                payment.getId().value() : null;
         return new PaymentEntity(
                 id,
                 payment.getMethod(),

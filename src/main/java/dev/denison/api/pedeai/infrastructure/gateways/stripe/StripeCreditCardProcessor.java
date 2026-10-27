@@ -18,7 +18,7 @@ public class StripeCreditCardProcessor implements PaymentProcessorStrategy {
     @Override
     public void process(Payment payment) {
         System.out.println("|>> Iniciando transação no STRIPE para o pagamento ID: " +
-                payment.getPaymentId().value());
+                payment.getId().value());
         // Aqui vai o código real que monta o JSON e faz o POST HTTP para a API do Stripe.
     }
 }
