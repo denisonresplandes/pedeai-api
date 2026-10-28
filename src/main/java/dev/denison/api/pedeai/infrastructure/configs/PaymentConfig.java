@@ -14,7 +14,12 @@ import java.util.List;
 @Configuration
 public class PaymentConfig {
 
-    // Só o decorator vira bean; o porquê está em KitchenConfig.kitchenCommandHandler.
+    /*
+     * Escrita (padrão Decorator): o bean exposto é o TransactionalPaymentCommandHandlerDecorator, que
+     * embrulha o handler de verdade (DefaultPaymentCommandHandler). Só o decorator vira bean; o porquê está
+     * em KitchenConfig.kitchenCommandHandler. Nem todo método entra na transação: o processPayment fica de
+     * fora, de propósito (veja o decorator).
+     */
     @Bean
     PaymentCommandHandler paymentCommandHandler(PaymentRepository repository,
                                                 List<PaymentProcessorStrategy> strategies,

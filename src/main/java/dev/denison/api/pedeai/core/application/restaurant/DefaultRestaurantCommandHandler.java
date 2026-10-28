@@ -29,6 +29,7 @@ public class DefaultRestaurantCommandHandler implements RestaurantCommandHandler
         this.kitchenQueryRepository = kitchenQueryRepository;
     }
 
+    // Roda dentro da transação aberta pelo TransactionalRestaurantCommandHandlerDecorator.
     @Override
     public RestaurantResponse create(CreateRestaurantCommand command) {
         validate(command, "The create restaurant command cannot be null.");
@@ -46,6 +47,7 @@ public class DefaultRestaurantCommandHandler implements RestaurantCommandHandler
         return RestaurantResponseMapper.toResponse(restaurantSaved);
     }
 
+    // Roda dentro da transação aberta pelo TransactionalRestaurantCommandHandlerDecorator.
     @Override
     public RestaurantResponse update(UpdateRestaurantCommand command) {
         validate(command, "The update restaurant command cannot be null.");
@@ -62,6 +64,7 @@ public class DefaultRestaurantCommandHandler implements RestaurantCommandHandler
     }
 
     // Recebe o id direto, sem Command: veja DefaultKitchenCommandHandler.delete.
+    // Roda dentro da transação aberta pelo TransactionalRestaurantCommandHandlerDecorator.
     @Override
     public void delete(Long id) {
         RestaurantId restaurantId = new RestaurantId(id);

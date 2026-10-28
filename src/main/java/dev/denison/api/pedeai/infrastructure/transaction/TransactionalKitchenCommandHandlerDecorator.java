@@ -7,7 +7,9 @@ import dev.denison.api.pedeai.core.application.kitchen.dto.UpdateKitchenCommand;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /*
- * DECORATOR: tem a mesma interface do handler e "embrulha" cada chamada numa transação.
+ * PADRÃO DECORATOR: esta classe tem a mesma interface do handler (KitchenCommandHandler) e guarda uma
+ * referência para o handler de verdade (o "delegate"). Cada método acrescenta um comportamento (a transação)
+ * antes e depois de repassar a chamada, sem alterar o handler.
  *
  *   Controller --update()--> [ este decorator ] --update()--> DefaultKitchenCommandHandler
  *                              BEGIN                             (regras de negócio)
@@ -38,19 +40,31 @@ public class TransactionalKitchenCommandHandlerDecorator implements KitchenComma
         this.transactionTemplate = transactionTemplate;
     }
 
+    /*
+     * TRANSAÇÃO: checar se o nome já existe e gravar acontecem na mesma transação. Se qualquer passo
+     * lançar exceção (nome duplicado, erro do banco), nada fica gravado (ROLLBACK).
+     */
     @Override
     public KitchenResponse create(CreateKitchenCommand command) {
         return transactionTemplate.execute(status -> delegate.create(command));
     }
 
+    /*
+     * TRANSAÇÃO: buscar a cozinha, checar o nome e gravar compartilham o mesmo EntityManager (cache de
+     * 1º nível). O findById do handler e o do save são a mesma entidade, e o UPDATE sai uma vez só, no
+     * COMMIT. Medido: 3 instruções SQL (TransactionBoundaryTest).
+     */
     @Override
     public KitchenResponse update(UpdateKitchenCommand command) {
         return transactionTemplate.execute(status -> delegate.update(command));
     }
 
+    /*
+     * TRANSAÇÃO: buscar a cozinha, conferir se há restaurantes vinculados e excluir: ou tudo acontece,
+     * ou nada. Sem retorno: executeWithoutResult no lugar de execute.
+     */
     @Override
     public void delete(Long id) {
-        // Sem retorno: executeWithoutResult no lugar de execute.
         transactionTemplate.executeWithoutResult(status -> delegate.delete(id));
     }
 }

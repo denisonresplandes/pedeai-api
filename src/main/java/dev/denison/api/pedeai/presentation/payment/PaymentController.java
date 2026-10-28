@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/payments")
 public class PaymentController {
 
+    // Na prática é o TransactionalPaymentCommandHandlerDecorator (montado no PaymentConfig). Atenção: o
+    // processPayment NÃO roda em transação (chama o gateway); o decorator só repassa a chamada.
     private final PaymentCommandHandler commandHandler;
 
     public PaymentController(PaymentCommandHandler commandHandler) {

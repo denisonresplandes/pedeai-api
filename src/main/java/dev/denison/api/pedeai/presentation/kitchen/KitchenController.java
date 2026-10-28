@@ -26,6 +26,8 @@ import java.util.Objects;
 public class KitchenController {
 
     private final KitchenQueryHandler queryHandler;
+    // Na prática é o TransactionalKitchenCommandHandlerDecorator (montado no KitchenConfig):
+    // create, update e delete já chegam ao handler dentro de uma transação.
     private final KitchenCommandHandler commandHandler;
 
     public KitchenController(KitchenQueryHandler queryHandler,
@@ -50,8 +52,9 @@ public class KitchenController {
     }
 
     /*
-     * A transação (que mantém a cache de 1º nível e evita SELECTs extras) não é mais daqui: ela é aberta
-     * pelo TransactionalKitchenCommandHandlerDecorator, em volta do caso de uso.
+     * Este método não abre transação: ela é aberta pelo decorator por trás do commandHandler
+     * (TransactionalKitchenCommandHandlerDecorator), em volta do caso de uso inteiro. É ela que mantém a
+     * cache de 1º nível e evita SELECTs extras.
      */
     @PutMapping("/{id}")
     public KitchenResponse update(@PathVariable

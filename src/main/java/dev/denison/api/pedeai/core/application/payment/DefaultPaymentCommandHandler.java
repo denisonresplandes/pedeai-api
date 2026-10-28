@@ -53,7 +53,8 @@ public class DefaultPaymentCommandHandler implements PaymentCommandHandler {
         processor.process(payment);
     }
 
-    // FLUXO 2: O Stripe avisa de forma assíncrona que o cartão passou
+    // FLUXO 2: O Stripe avisa de forma assíncrona que o cartão passou.
+    // Roda dentro da transação aberta pelo TransactionalPaymentCommandHandlerDecorator.
     @Override
     public void confirmPaymentFromWebhook(ConfirmPaymentCommand command) {
         Payment payment = paymentRepository.findById(new PaymentId(command.paymentId()))

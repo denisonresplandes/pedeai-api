@@ -19,7 +19,11 @@ public class RestaurantConfig {
         return new RestaurantQueryHandler(queryRepository);
     }
 
-    // Só o decorator vira bean; o porquê está em KitchenConfig.kitchenCommandHandler.
+    /*
+     * Escrita (padrão Decorator): o bean exposto é o TransactionalRestaurantCommandHandlerDecorator, que
+     * embrulha o handler de verdade (DefaultRestaurantCommandHandler) numa transação. Só o decorator vira
+     * bean; o porquê está em KitchenConfig.kitchenCommandHandler.
+     */
     @Bean
     RestaurantCommandHandler restaurantCommandHandler(RestaurantRepository repository,
                                                       KitchenQueryRepository kitchenQueryRepository,

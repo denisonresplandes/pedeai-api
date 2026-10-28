@@ -22,6 +22,8 @@ import java.util.Objects;
 public class RestaurantController {
 
     private final RestaurantQueryHandler queryHandler;
+    // Na prática é o TransactionalRestaurantCommandHandlerDecorator (montado no RestaurantConfig):
+    // create, update e delete já chegam ao handler dentro de uma transação.
     private final RestaurantCommandHandler commandHandler;
 
     public RestaurantController(RestaurantQueryHandler queryHandler,

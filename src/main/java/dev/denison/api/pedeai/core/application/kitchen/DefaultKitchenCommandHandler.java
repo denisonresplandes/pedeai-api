@@ -29,6 +29,7 @@ public class DefaultKitchenCommandHandler implements KitchenCommandHandler {
         this.restaurantQueryRepository = restaurantQueryRepository;
     }
 
+    // Roda dentro da transação aberta pelo TransactionalKitchenCommandHandlerDecorator.
     @Override
     public KitchenResponse create(CreateKitchenCommand command) {
         validate(command, "The create kitchen command cannot be null.");
@@ -39,6 +40,7 @@ public class DefaultKitchenCommandHandler implements KitchenCommandHandler {
         return KitchenResponseMapper.toResponse(kitchenSaved);
     }
 
+    // Roda dentro da transação aberta pelo TransactionalKitchenCommandHandlerDecorator.
     @Override
     public KitchenResponse update(UpdateKitchenCommand command) {
         validate(command, "The update kitchen command cannot be null.");
@@ -61,6 +63,8 @@ public class DefaultKitchenCommandHandler implements KitchenCommandHandler {
      * Recebe o id direto, sem Command: uma exclusão só precisa do id e não carrega dados, então um
      * DeleteKitchenCommand seria um Long embrulhado (as consultas também recebem o Long). O id é
      * validado pelo VO KitchenId. Se a exclusão um dia ganhar dados (ex.: motivo), o Command volta.
+     *
+     * Roda dentro da transação aberta pelo TransactionalKitchenCommandHandlerDecorator.
      */
     @Override
     public void delete(Long id) {

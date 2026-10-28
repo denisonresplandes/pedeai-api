@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/webhooks/stripe")
 public class StripeWebhookController {
 
+    // Na prática é o TransactionalPaymentCommandHandlerDecorator (montado no PaymentConfig):
+    // o confirmPaymentFromWebhook já chega ao handler dentro de uma transação.
     private final PaymentCommandHandler commandHandler;
 
     public StripeWebhookController(PaymentCommandHandler commandHandler) {
