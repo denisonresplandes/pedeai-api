@@ -25,8 +25,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 // Veja TransactionalKitchenCommandHandlerDecoratorTest para o raciocínio destes testes.
@@ -46,23 +48,26 @@ class TransactionalPaymentCommandHandlerDecoratorTest {
 
     @BeforeEach
     void setUp() {
-        when(transactionManager.getTransaction(any(TransactionDefinition.class))).thenReturn(status);
+        // lenient: o teste do processPayment não abre transação, então não usa este stub (de propósito).
+        lenient().when(transactionManager.getTransaction(any(TransactionDefinition.class))).thenReturn(status);
         decorator = new TransactionalPaymentCommandHandlerDecorator(
                 delegate, new TransactionTemplate(transactionManager));
     }
 
+    /*
+     * De propósito SEM transação: o processPayment chama o gateway (rede), e uma chamada externa lenta
+     * não pode segurar uma conexão do banco aberta. O handler grava o pagamento numa transação curta
+     * (a do próprio save) e chama o gateway depois do commit. Veja TransactionBoundaryTest.
+     */
     @Test
-    @DisplayName("processPayment: chama o handler dentro da transação e faz commit.")
-    void processPaymentRunsInsideTheTransactionAndCommits() {
+    @DisplayName("processPayment: chama o handler SEM abrir transação (o gateway não pode rodar dentro de uma).")
+    void processPaymentDoesNotOpenATransaction() {
         ProcessPaymentCommand command = new ProcessPaymentCommand(new Money(new BigDecimal("10.50")), PaymentMethod.PIX);
 
         decorator.processPayment(command);
 
-        InOrder order = inOrder(transactionManager, delegate);
-        order.verify(transactionManager).getTransaction(any(TransactionDefinition.class));
-        order.verify(delegate).processPayment(command);
-        order.verify(transactionManager).commit(status);
-        verify(transactionManager, never()).rollback(any());
+        verify(delegate).processPayment(command);
+        verifyNoInteractions(transactionManager);
     }
 
     @Test

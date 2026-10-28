@@ -6,13 +6,16 @@ import dev.denison.api.pedeai.core.application.payment.dto.ProcessPaymentCommand
 import org.springframework.transaction.support.TransactionTemplate;
 
 /*
- * Abre a transação em volta de cada caso de uso de escrita de Payment. O modelo e o raciocínio
- * estão em TransactionalKitchenCommandHandlerDecorator.
+ * Abre a transação em volta dos casos de uso de escrita de Payment. O modelo e o raciocínio estão em
+ * TransactionalKitchenCommandHandlerDecorator.
  *
- * ATENÇÃO (etapa 17, B10): hoje o processPayment inteiro roda dentro da transação, inclusive a
- * chamada ao gateway (Stripe, Mercado Pago). Isso já era assim com o @Transactional no controller,
- * então esta etapa não muda o comportamento. Corrigir é decidir onde a transação termina, e isso fica
- * fácil aqui: basta o decorator (ou o handler) deixar a chamada externa de fora.
+ * Diferença deste decorator: nem todo método é transacional.
+ *  - confirmPaymentFromWebhook: lê o pagamento, muda o status e grava. É uma unidade só, então entra
+ *    na transação.
+ *  - processPayment: NÃO entra, de propósito. Ele grava o pagamento e depois chama o gateway (rede).
+ *    Dentro de uma transação, uma chamada externa lenta manteria uma conexão do banco presa esperando.
+ *    Sem transação em volta, o save do handler tem a própria transação curta, que termina (commit)
+ *    antes de o gateway ser chamado. Quem escolhe onde cada passo roda é o DefaultPaymentCommandHandler.
  */
 public class TransactionalPaymentCommandHandlerDecorator implements PaymentCommandHandler {
 
@@ -27,7 +30,8 @@ public class TransactionalPaymentCommandHandlerDecorator implements PaymentComma
 
     @Override
     public void processPayment(ProcessPaymentCommand command) {
-        transactionTemplate.executeWithoutResult(status -> delegate.processPayment(command));
+        // Sem transação de propósito (veja o comentário da classe): só repassa a chamada.
+        delegate.processPayment(command);
     }
 
     @Override

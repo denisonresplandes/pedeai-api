@@ -1,12 +1,17 @@
 package dev.denison.api.pedeai;
 
 import com.jayway.jsonpath.JsonPath;
+import dev.denison.api.pedeai.core.application.payment.PaymentProcessorStrategy;
 import dev.denison.api.pedeai.core.domain.kitchen.vo.KitchenId;
+import dev.denison.api.pedeai.core.domain.payment.Payment;
+import dev.denison.api.pedeai.core.domain.payment.PaymentRepository;
+import dev.denison.api.pedeai.core.domain.payment.PaymentStatus;
 import dev.denison.api.pedeai.core.domain.payment.PaymentMethod;
 import dev.denison.api.pedeai.core.domain.restaurant.Restaurant;
 import dev.denison.api.pedeai.core.domain.restaurant.RestaurantRepository;
 import dev.denison.api.pedeai.core.domain.restaurant.vo.RestaurantId;
 import dev.denison.api.pedeai.core.domain.restaurant.vo.RestaurantName;
+import dev.denison.api.pedeai.core.domain.shared.Money;
 import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.SessionFactory;
 import org.hibernate.stat.Statistics;
@@ -14,17 +19,24 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Bean;
+import org.springframework.core.Ordered;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.IllegalTransactionStateException;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.math.BigDecimal;
 import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -58,6 +70,12 @@ class TransactionBoundaryTest {
     @Autowired
     private RestaurantRepository restaurantRepository;
 
+    @Autowired
+    private SpyPixGateway spyGateway;
+
+    @Autowired
+    private PaymentRepository paymentRepository;
+
     @Test
     @DisplayName("PUT /kitchens/{id} (renomear) executa 3 instruções: select, checagem do nome e update.")
     void renamingAKitchenRunsThreeStatements() throws Exception {
@@ -90,6 +108,43 @@ class TransactionBoundaryTest {
         assertEquals(4, statements);
         mockMvc.perform(delete("/restaurants/{id}", id)).andExpect(status().isNoContent());
         mockMvc.perform(delete("/kitchens/{id}", kitchenId)).andExpect(status().isNoContent());
+    }
+
+    /*
+     * O webhook lê o pagamento, muda o status e grava. Dentro da transação do decorator, o save (merge) acha o
+     * pagamento já carregado na cache de 1º nível: select + update = 2. Sem a transação, o merge precisaria
+     * carregar o pagamento de novo: select + select + update = 3.
+     */
+    @Test
+    @DisplayName("POST /webhooks/stripe (confirmar o pagamento) executa 2 instruções: select e update.")
+    void confirmingAPaymentRunsTwoStatements() throws Exception {
+        Payment payment = paymentRepository.save(
+                Payment.create(PaymentMethod.CREDIT_CARD, new Money(new BigDecimal("30.00"))));
+
+        long statements = countStatements(() -> mockMvc.perform(post("/webhooks/stripe")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"status\": \"SUCCESS\", \"paymentId\": %d}".formatted(payment.getId().value()))));
+
+        assertEquals(2, statements);
+    }
+
+    /*
+     * B10: o gateway é uma chamada externa (rede), possivelmente lenta. Se ela rodasse dentro da transação
+     * do banco, a conexão ficaria presa esperando por ela. O SpyPixGateway (abaixo) anota, NO INSTANTE em
+     * que é chamado, se há transação aberta e se o pagamento já está visível no banco. Sem transação aberta,
+     * só enxerga o pagamento se ele já foi gravado de verdade (commit).
+     */
+    @Test
+    @DisplayName("POST /payments: o gateway é chamado depois do commit do pagamento e fora de qualquer transação.")
+    void gatewayIsCalledAfterTheCommitAndOutsideAnyTransaction() throws Exception {
+        mockMvc.perform(post("/payments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"amount\": 10.50, \"method\": \"PIX\"}"))
+                .andExpect(status().isAccepted());
+
+        assertFalse(spyGateway.transactionActiveWhenCalled, "o gateway rodou dentro de uma transação");
+        assertNotNull(spyGateway.statusFoundInDatabaseWhenCalled, "o pagamento ainda não estava gravado");
+        assertEquals(PaymentStatus.PENDING, spyGateway.statusFoundInDatabaseWhenCalled);
     }
 
     /*
@@ -141,6 +196,47 @@ class TransactionBoundaryTest {
     // Nome único por execução (máx. 50 caracteres): não colide com dados que sobrarem de outro teste.
     private static String uniqueName(String prefix) {
         return prefix + " " + UUID.randomUUID().toString().substring(0, 8);
+    }
+
+    /*
+     * Gateway de mentira para o método PIX. Tem precedência máxima, então o handler o escolhe no lugar do
+     * processador real de PIX (a lista de estratégias é percorrida na ordem e vence o primeiro que suporta).
+     */
+    @TestConfiguration
+    static class SpyGatewayConfiguration {
+        @Bean
+        SpyPixGateway spyPixGateway(PaymentRepository paymentRepository) {
+            return new SpyPixGateway(paymentRepository);
+        }
+    }
+
+    static class SpyPixGateway implements PaymentProcessorStrategy, Ordered {
+
+        private final PaymentRepository paymentRepository;
+        volatile boolean transactionActiveWhenCalled = true;
+        volatile PaymentStatus statusFoundInDatabaseWhenCalled;
+
+        SpyPixGateway(PaymentRepository paymentRepository) {
+            this.paymentRepository = paymentRepository;
+        }
+
+        @Override
+        public boolean supports(dev.denison.api.pedeai.core.domain.payment.PaymentMethod method) {
+            return method == dev.denison.api.pedeai.core.domain.payment.PaymentMethod.PIX;
+        }
+
+        @Override
+        public void process(Payment payment) {
+            transactionActiveWhenCalled = TransactionSynchronizationManager.isActualTransactionActive();
+            statusFoundInDatabaseWhenCalled = paymentRepository.findById(payment.getId())
+                    .map(Payment::getStatus)
+                    .orElse(null);
+        }
+
+        @Override
+        public int getOrder() {
+            return Ordered.HIGHEST_PRECEDENCE;
+        }
     }
 
     @FunctionalInterface
