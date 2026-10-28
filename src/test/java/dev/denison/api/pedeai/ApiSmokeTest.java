@@ -140,9 +140,15 @@ class ApiSmokeTest {
                 .andExpect(jsonPath("$.name").value(renamed))
                 .andExpect(jsonPath("$.paymentMethods", hasItems("CASH", "PIX")));
 
-        // Cozinha com restaurante vinculado não pode ser excluída (409), só depois que ele sai.
+        // Cozinha com restaurante vinculado não pode ser excluída. O handler não consulta restaurantes: quem
+        // recusa é a FK do banco, e o GlobalExceptionHandler traduz para 409 (ProblemDetail, não 500).
+        // A transação é desfeita (ROLLBACK), então a cozinha continua existindo.
         mockMvc.perform(delete("/kitchens/{id}", kitchenId))
-                .andExpect(status().isConflict());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.title").value("Resource Conflict"));
+        mockMvc.perform(get("/kitchens/{id}", kitchenId))
+                .andExpect(status().isOk());
+        // Só depois que o restaurante sai a exclusão funciona (veja o final do teste).
 
         mockMvc.perform(delete("/restaurants/{id}", id))
                 .andExpect(status().isNoContent());

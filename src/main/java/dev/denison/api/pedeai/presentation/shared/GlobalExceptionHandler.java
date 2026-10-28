@@ -40,13 +40,15 @@ public class GlobalExceptionHandler {
     }
 
     /*
-     * Rede de segurança para violações de integridade que só o banco consegue detectar.
+     * Violações de integridade que só o banco consegue detectar.
      *
-     * O caminho normal já devolve 409 com mensagem específica (ex.: KitchenNameAlreadyExistsException,
-     * KitchenInUseException). Mas essas checagens são "ler e depois escrever" em momentos
-     * diferentes: se duas requisições passam pelo existsByName ao mesmo tempo, as duas veem
-     * "nome livre" e a segunda estoura a constraint única no INSERT. O mesmo vale para uma FK
-     * (ex.: apagar uma cozinha enquanto outra requisição cria um restaurante nela).
+     * Duas situações chegam aqui:
+     *  - Rede de segurança: o caminho normal já devolve 409 com mensagem específica (ex.:
+     *    KitchenNameAlreadyExistsException), mas essas checagens são "ler e depois escrever" em
+     *    momentos diferentes. Se duas requisições passam pelo existsByName ao mesmo tempo, as duas
+     *    veem "nome livre" e a segunda estoura a constraint única.
+     *  - Caminho principal: excluir uma cozinha que ainda tem restaurantes. O handler não consulta
+     *    os restaurantes; a FK fk_restaurant_kitchen recusa o DELETE e a resposta é este 409.
      * Só o banco é atômico, por isso ele é a última linha de defesa e aqui traduzimos o erro.
      *
      * - A mensagem do SQL ("Duplicate entry ... for key ...") vai só para o log: ela expõe

@@ -10,7 +10,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  * verdade (DefaultPaymentCommandHandler). Abre a transação em volta dos casos de uso de escrita de Payment
  * que precisam dela. O modelo completo e o raciocínio estão em TransactionalKitchenCommandHandlerDecorator.
  *
- * Diferença deste decorator: nem todoo métodoo é transacional.
+ * Diferença deste decorator: nem todo método é transacional.
  *  - confirmPaymentFromWebhook: lê o pagamento, muda o status e grava. É uma unidade só, então entra
  *    na transação.
  *  - processPayment: NÃO entra, de propósito. Ele grava o pagamento e depois chama o gateway (rede).

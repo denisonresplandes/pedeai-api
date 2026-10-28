@@ -3,10 +3,8 @@ package dev.denison.api.pedeai.core.application.kitchen;
 import dev.denison.api.pedeai.core.application.kitchen.dto.CreateKitchenCommand;
 import dev.denison.api.pedeai.core.application.kitchen.dto.KitchenResponse;
 import dev.denison.api.pedeai.core.application.kitchen.dto.UpdateKitchenCommand;
-import dev.denison.api.pedeai.core.application.kitchen.exceptions.KitchenInUseException;
 import dev.denison.api.pedeai.core.application.kitchen.exceptions.KitchenNameAlreadyExistsException;
 import dev.denison.api.pedeai.core.application.kitchen.exceptions.KitchenNotFoundException;
-import dev.denison.api.pedeai.core.application.restaurant.RestaurantQueryRepository;
 import dev.denison.api.pedeai.core.application.shared.ValidationException;
 import dev.denison.api.pedeai.core.domain.kitchen.Kitchen;
 import dev.denison.api.pedeai.core.domain.kitchen.KitchenRepository;
@@ -21,12 +19,9 @@ import dev.denison.api.pedeai.core.domain.kitchen.vo.KitchenName;
 public class DefaultKitchenCommandHandler implements KitchenCommandHandler {
 
     private final KitchenRepository repository;
-    private final RestaurantQueryRepository restaurantQueryRepository;
 
-    public DefaultKitchenCommandHandler(KitchenRepository repository,
-                                        RestaurantQueryRepository restaurantQueryRepository) {
+    public DefaultKitchenCommandHandler(KitchenRepository repository) {
         this.repository = repository;
-        this.restaurantQueryRepository = restaurantQueryRepository;
     }
 
     // Roda dentro da transação aberta pelo TransactionalKitchenCommandHandlerDecorator.
@@ -65,13 +60,16 @@ public class DefaultKitchenCommandHandler implements KitchenCommandHandler {
      * validado pelo VO KitchenId. Se a exclusão um dia ganhar dados (ex.: motivo), o Command volta.
      *
      * Roda dentro da transação aberta pelo TransactionalKitchenCommandHandlerDecorator.
+     *
+     * Não confere se há restaurantes vinculados: quem garante isso é a FK fk_restaurant_kitchen. Se houver,
+     * o banco recusa o DELETE (no COMMIT), a transação é desfeita e o GlobalExceptionHandler responde 409.
+     * Assim o módulo Kitchen não depende do módulo Restaurant (antes um consultava o outro e formavam um
+     * ciclo), e a regra vale mesmo se um restaurante for criado entre a checagem e a exclusão, algo que
+     * uma consulta prévia não consegue garantir.
      */
     @Override
     public void delete(Long id) {
         Kitchen kitchenToDelete = getKitchenOrElseThrow(new KitchenId(id));
-        if (restaurantQueryRepository.existsByKitchenId(kitchenToDelete.getId())) {
-            throw new KitchenInUseException(kitchenToDelete.getId().value());
-        }
         repository.delete(kitchenToDelete);
     }
 

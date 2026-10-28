@@ -4,7 +4,6 @@ import dev.denison.api.pedeai.core.application.kitchen.DefaultKitchenCommandHand
 import dev.denison.api.pedeai.core.application.kitchen.KitchenCommandHandler;
 import dev.denison.api.pedeai.core.application.kitchen.KitchenQueryHandler;
 import dev.denison.api.pedeai.core.application.kitchen.KitchenQueryRepository;
-import dev.denison.api.pedeai.core.application.restaurant.RestaurantQueryRepository;
 import dev.denison.api.pedeai.core.domain.kitchen.KitchenRepository;
 import dev.denison.api.pedeai.infrastructure.transaction.TransactionalKitchenCommandHandlerDecorator;
 import org.springframework.context.annotation.Bean;
@@ -28,9 +27,8 @@ public class KitchenConfig {
      */
     @Bean
     KitchenCommandHandler kitchenCommandHandler(KitchenRepository repository,
-                                                RestaurantQueryRepository restaurantQueryRepository,
                                                 TransactionTemplate transactionTemplate) {
-        KitchenCommandHandler handler = new DefaultKitchenCommandHandler(repository, restaurantQueryRepository);
+        KitchenCommandHandler handler = new DefaultKitchenCommandHandler(repository);
         return new TransactionalKitchenCommandHandlerDecorator(handler, transactionTemplate);
     }
 }

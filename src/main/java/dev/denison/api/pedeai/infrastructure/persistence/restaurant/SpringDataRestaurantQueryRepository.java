@@ -31,6 +31,4 @@ public interface SpringDataRestaurantQueryRepository extends Repository<Restaura
     """)
     Optional<RestaurantEntity> findByNameIgnoreCase(String name);
 
-    boolean existsByKitchenId(Long kitchenId);
-
 }
